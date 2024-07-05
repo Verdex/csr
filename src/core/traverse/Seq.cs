@@ -10,6 +10,7 @@ public static class Seq {
         var s = new List<ISeqable> { target };
         while(s.Count > 0) {
             var t = s[^1];
+            s.RemoveAt(s.Count - 1);
             var ns = t.Next();
             s.AddRange(ns);
             yield return t;
