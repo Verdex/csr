@@ -1,2 +1,11 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿
+using csr.core.code;
+
+namespace csr;
+
+public static class Program {
+    public static void Main() {
+        CSharp.Parse();
+        Console.WriteLine("blarg");
+    }
+}
