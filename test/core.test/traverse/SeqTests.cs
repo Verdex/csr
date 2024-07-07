@@ -6,11 +6,13 @@ namespace csr.test.core.traverse;
 [TestFixture]
 public class SeqTests {
 
-    private abstract record Tree : ISeqable {
+    private abstract record Tree : ISeqable<Tree> {
         public record Leaf(byte Value) : Tree;
         public record Node(Tree Right, Tree Left) : Tree;
 
-        public IEnumerable<ISeqable> Next() 
+        public Tree Self() => this;
+
+        public IEnumerable<Tree> Next() 
             => this switch {
                 Leaf => [],
                 Node n => [n.Left, n.Right],
@@ -25,12 +27,12 @@ public class SeqTests {
 
         var output = tree.ToSeq().ToList();
 
-        Assert.That(output, Is.EqualTo(new List<ISeqable> { tree
-                                                          , new Tree.Node(new Tree.Leaf(0), new Tree.Leaf(1))
-                                                          , new Tree.Leaf(0)
-                                                          , new Tree.Leaf(1)
-                                                          , new Tree.Leaf(2)
-                                                          }));
+        Assert.That(output, Is.EqualTo(new List<Tree> { tree
+                                                      , new Tree.Node(new Tree.Leaf(0), new Tree.Leaf(1))
+                                                      , new Tree.Leaf(0)
+                                                      , new Tree.Leaf(1)
+                                                      , new Tree.Leaf(2)
+                                                      }));
     }
 
 }
