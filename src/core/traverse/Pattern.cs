@@ -30,4 +30,10 @@ public abstract record Pattern<T> where T : IMatchable<T> {
 public static class Pattern {
     public static Pattern<T> Wild<T>() where T : IMatchable<T> => new Pattern<T>.Wild();
 
+    public static IEnumerable<(string Name, T Item)> Find<T>(this IMatchable<T> data, Pattern<T> pattern) where T : IMatchable<T> {
+        throw new NotImplementedException();
+    }
+
+    public static IDictionary<string, T> FindDict<T>(this IMatchable<T> data, Pattern<T> pattern) where T : IMatchable<T> =>
+        data.Find(pattern).ToDictionary(k => k.Name, v => v.Item);
 }
