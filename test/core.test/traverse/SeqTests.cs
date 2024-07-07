@@ -7,6 +7,8 @@ namespace csr.test.core.traverse;
 public class SeqTests {
 
     private abstract record Tree : ISeqable<Tree> {
+        private Tree() { }
+
         public record Leaf(byte Value) : Tree;
         public record Node(Tree Right, Tree Left) : Tree;
 
