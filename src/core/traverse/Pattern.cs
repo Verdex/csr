@@ -26,3 +26,8 @@ public abstract record Pattern<T> where T : IMatchable<T> {
     public record Predicate(Func<T, bool> Pred) : Pattern<T>;
     public record MatchWith(Func<IDictionary<string, T>, Pattern<T>> With) : Pattern<T>;
 }
+
+public static class Pattern {
+    public static Pattern<T> Wild<T>() where T : IMatchable<T> => new Pattern<T>.Wild();
+
+}
