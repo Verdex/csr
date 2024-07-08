@@ -66,10 +66,10 @@ public static class Pattern {
         private readonly T _data;
         private readonly Pattern<T> _pattern;
 
+        private Stack<(T, Pattern<T>)> _work = new();
         private List<(string, T)> _captures = new();
         private List<T> _nexts = new();
         private Stack<(List<(string, T)> Captures, Stack<(T, Pattern<T>)> Work, List<T> Nexts)> _alternatives = new();
-        private Stack<(T, Pattern<T>)> _work = new();
 
         public PatternEnumerator(T data, Pattern<T> pattern) {
             _work.Push((data, pattern));
@@ -80,7 +80,29 @@ public static class Pattern {
         public IEnumerable<(string Name, T Item)> Current => _captures;
 
         public bool MoveNext() {
-            throw new NotImplementedException();
+            if (_work.Count == 0 && _alternatives.Count == 0) {
+                return false;
+            }
+
+            if (_work.Count == 0) {
+                SwitchToAlternative();
+            }
+
+            while (_work.Count != 0) {
+                var (data, pattern) = _work.Pop();
+                switch (pattern) {
+                    case Pattern<T>.Wild: break;
+
+                    case Pattern<T>.Capture c:
+                        _captures.Add((c.Name, data));
+                        break;
+
+                    default:
+                        throw new NotImplementedException("TODO");
+                }
+            }
+
+            return true;
         }
 
         object IEnumerator.Current => _captures;
@@ -94,5 +116,12 @@ public static class Pattern {
         }
 
         public void Dispose() { }
+
+        private void SwitchToAlternative() {
+            var alt = _alternatives.Pop();
+            _work = alt.Work;
+            _captures = alt.Captures;
+            _nexts = alt.Nexts;
+        }
     }
 }
