@@ -49,21 +49,21 @@ public static class Pattern {
     public static Pattern<T> Predicate<T>(Func<T, bool> predicate) where T : IMatchable<T> => new Pattern<T>.Predicate(predicate);
     public static Pattern<T> MatchWith<T>(Func<IDictionary<string, T>, Pattern<T>> func) where T : IMatchable<T> => new Pattern<T>.MatchWith(func);
 
-    public static IEnumerable<(string Name, T Item)> Find<T>(this T data, Pattern<T> pattern) where T : IMatchable<T> =>
+    public static IEnumerable<IEnumerable<(string Name, T Item)>> Find<T>(this T data, Pattern<T> pattern) where T : IMatchable<T> =>
         new PatternEnumerable<T>(data, pattern);
 
-    public static IDictionary<string, T> FindDict<T>(this T data, Pattern<T> pattern) where T : IMatchable<T> =>
-        data.Find(pattern).ToDictionary(k => k.Name, v => v.Item);
+    public static IEnumerable<IDictionary<string, T>> FindDict<T>(this T data, Pattern<T> pattern) where T : IMatchable<T> =>
+        data.Find(pattern).Select(x => x.ToDictionary(k => k.Name, v => v.Item));
 
-    public class PatternEnumerable<T>(T data, Pattern<T> pattern) : IEnumerable<(string Name, T Item)> where T : IMatchable<T> {
+    public class PatternEnumerable<T>(T data, Pattern<T> pattern) : IEnumerable<IEnumerable<(string Name, T Item)>> where T : IMatchable<T> {
         private PatternEnumerator<T> Enumerator() => new PatternEnumerator<T>(data, pattern);
-        public IEnumerator<(string Name, T Item)> GetEnumerator() => Enumerator();
+        public IEnumerator<IEnumerable<(string Name, T Item)>> GetEnumerator() => Enumerator();
         IEnumerator IEnumerable.GetEnumerator() => Enumerator();
     }
 
-    public class PatternEnumerator<T>(T data, Pattern<T> pattern) : IEnumerator<(string Name, T Item)> where T : IMatchable<T> {
+    public class PatternEnumerator<T>(T data, Pattern<T> pattern) : IEnumerator<IEnumerable<(string Name, T Item)>> where T : IMatchable<T> {
 
-        public (string Name, T Item) Current => throw new NotImplementedException();
+        public IEnumerable<(string Name, T Item)> Current => throw new NotImplementedException();
 
         public bool MoveNext() {
             throw new NotImplementedException();
