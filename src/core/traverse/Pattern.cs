@@ -61,22 +61,38 @@ public static class Pattern {
         IEnumerator IEnumerable.GetEnumerator() => Enumerator();
     }
 
-    public class PatternEnumerator<T>(T data, Pattern<T> pattern) : IEnumerator<IEnumerable<(string Name, T Item)>> where T : IMatchable<T> {
+    public class PatternEnumerator<T> : IEnumerator<IEnumerable<(string Name, T Item)>> where T : IMatchable<T> {
 
-        public IEnumerable<(string Name, T Item)> Current => throw new NotImplementedException();
+        private readonly T _data;
+        private readonly Pattern<T> _pattern;
+
+        private List<(string, T)> _captures = new();
+        private List<T> _nexts = new();
+        private Stack<(List<(string, T)> Captures, Stack<(T, Pattern<T>)> Work, List<T> Nexts)> _alternatives = new();
+        private Stack<(T, Pattern<T>)> _work = new();
+
+        public PatternEnumerator(T data, Pattern<T> pattern) {
+            _work.Push((data, pattern));
+            _data = data;
+            _pattern = pattern;
+        }
+
+        public IEnumerable<(string Name, T Item)> Current => _captures;
 
         public bool MoveNext() {
             throw new NotImplementedException();
         }
 
-        object IEnumerator.Current => throw new NotImplementedException();
+        object IEnumerator.Current => _captures;
 
         public void Reset() {
-            throw new NotImplementedException();
+            _captures = new();
+            _nexts = new();
+            _alternatives = new();
+            _work = new();
+            _work.Push((_data, _pattern));
         }
 
-        public void Dispose() {
-            throw new NotImplementedException();
-        }
+        public void Dispose() { }
     }
 }
