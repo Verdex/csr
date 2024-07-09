@@ -9,10 +9,23 @@ public class PatternTests {
 
     [Test]
     public void FindWithWild() { 
-        var t = new Tree.Leaf(7);
-        var output = t.Find(Wild<Tree>());
-        // TODO 
+        var t = Leaf(7);
+        var output = t.Find(Wild<Tree>()).Select(x => x.ToList()).ToList();
+        Assert.Multiple(() => {
+            Assert.That(output.Count, Is.EqualTo(1));
+            Assert.That(output[0].Count, Is.EqualTo(0));
+        });
     }
+
+    [Test]
+    public void FindWithTemplateVar() {
+        var t = Node(Leaf(0), Leaf(0));
+        // TODO
+        Assert.Fail();
+    }
+
+    private static Tree Leaf(byte input) => new Tree.Leaf(input);
+    private static Tree Node(Tree left, Tree right) => new Tree.Node(left, right);
 
     private abstract record Tree : IMatchable<Tree> {
         private Tree() { }
