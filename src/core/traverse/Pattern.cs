@@ -98,6 +98,15 @@ public static class Pattern {
                         _captures.Add((c.Name, data));
                         break;
 
+                    case Pattern<T>.TemplateVar t:
+                        var item = _captures.Find(c => c.Item1.Equals(t.Name));
+                        if (item is null || !item.Equals(data)){
+                            // Note:  If the item is null then we've been given an non-existent variable name.
+                            // Note:  Switching to alternative on failure.
+                            SwitchToAlternative();
+                        }
+                        break;
+
                     default:
                         throw new NotImplementedException("TODO");
                 }
