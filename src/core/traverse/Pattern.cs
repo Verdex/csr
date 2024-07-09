@@ -17,6 +17,7 @@ public abstract record Pattern<T> where T : IMatchable<T> {
 
     public record Exact(Type Id, IEnumerable<Pattern<T>> Cs) : Pattern<T>;
     public record Contents(IEnumerable<Pattern<T>> Cs) : Pattern<T>;
+    public record Kind(Type Id) : Pattern<T>;
 
     public record And(Pattern<T> Left, Pattern<T> Right) : Pattern<T>;
     public record Or(Pattern<T> Left, Pattern<T> Right) : Pattern<T>;
@@ -37,10 +38,10 @@ public static class Pattern {
 
     public static Pattern<T> Exact<T>(Type id, IEnumerable<Pattern<T>> contents) where T : IMatchable<T> => new Pattern<T>.Exact(id, contents);
     public static Pattern<T> Contents<T>(IEnumerable<Pattern<T>> contents) where T : IMatchable<T> => new Pattern<T>.Contents(contents);
+    public static Pattern<T> Kind<T>(Type id) where T : IMatchable<T> => new Pattern<T>.Kind(id);
 
     public static Pattern<T> And<T>(Pattern<T> left, Pattern<T> right) where T : IMatchable<T> => new Pattern<T>.And(left, right);
     public static Pattern<T> Or<T>(Pattern<T> left, Pattern<T> right) where T : IMatchable<T> => new Pattern<T>.Or(left, right);
-
 
     public static Pattern<T> PathNext<T>() where T : IMatchable<T> => new Pattern<T>.PathNext();
     public static Pattern<T> Path<T>(IEnumerable<Pattern<T>> patterns) where T : IMatchable<T> => new Pattern<T>.Path(patterns);
