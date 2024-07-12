@@ -185,8 +185,8 @@ public static class Pattern {
         public void Dispose() { }
 
         private void AddAlternative(Stack<(T, Pattern<T>)> work) {
-            var c = _captures.ToList();
-            var n = _nexts.ToList();
+            var c = Dup(_captures);
+            var n = Dup(_nexts);
             _alternatives.Push((c, work, n));
         }
 
@@ -197,6 +197,7 @@ public static class Pattern {
             _nexts = alt.Nexts;
         }
 
-        private static Stack<(T, Pattern<T>)> Dup(Stack<(T, Pattern<T>)> s) => new (s);
+        private static Stack<X> Dup<X>(Stack<X> s) => new (s);
+        private static List<X> Dup<X>(List<X> l) => new (l);
     }
 }
