@@ -150,6 +150,20 @@ public static class Pattern {
                         break;
                     }
 
+                    case Pattern<T>.And a: {
+                        _work.Push((data, a.Right));
+                        _work.Push((data, a.Left));
+                        break;
+                    }
+
+                    case Pattern<T>.Or o: {
+                        var w = Dup(_work);
+                        w.Push((data, o.Right));
+                        AddAlternative(w);
+                        _work.Push((data, o.Left));
+                        break;
+                    }
+
                     default:
                         throw new NotImplementedException("TODO");
                 }
@@ -170,11 +184,19 @@ public static class Pattern {
 
         public void Dispose() { }
 
+        private void AddAlternative(Stack<(T, Pattern<T>)> work) {
+            var c = _captures.ToList();
+            var n = _nexts.ToList();
+            _alternatives.Push((c, work, n));
+        }
+
         private void SwitchToAlternative() {
             var alt = _alternatives.Pop();
             _work = alt.Work;
             _captures = alt.Captures;
             _nexts = alt.Nexts;
         }
+
+        private static Stack<(T, Pattern<T>)> Dup(Stack<(T, Pattern<T>)> s) => new (s);
     }
 }
