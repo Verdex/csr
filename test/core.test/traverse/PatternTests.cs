@@ -20,8 +20,13 @@ public class PatternTests {
     [Test]
     public void FindWithTemplateVar() {
         var t = Node(Leaf(0), Leaf(0));
-        // TODO
-        Assert.Fail();
+        var output = t.Find(Exact<Tree>(typeof(Tree.Node), [Capture<Tree>("a"), TemplateVar<Tree>("a")])).Select(x => x.ToList()).ToList();
+        Assert.Multiple(() => {
+            Assert.That(output.Count, Is.EqualTo(1));
+            Assert.That(output[0].Count, Is.EqualTo(1));
+            Assert.That(output[0][0].Name, Is.EqualTo("a"));
+            Assert.That(output[0][0].Item, Is.EqualTo(Leaf(0)));
+        });
     }
 
     private static Tree Leaf(byte input) => new Tree.Leaf(input);
