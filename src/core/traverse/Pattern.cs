@@ -129,6 +129,27 @@ public static class Pattern {
                         break;
                     }
 
+                    case Pattern<T>.Contents c: {
+                        var (_, cs) = data;
+                        foreach( var w in cs.Zip(c.Cs).Reverse() ) {
+                            _work.Push(w);
+                        }
+                        break;
+                    }
+
+                    case Pattern<T>.Kind k: {
+                        var (id, _) = data;
+                        if (id != k.Id) {
+                            if (_alternatives.Count > 0) {
+                                SwitchToAlternative();
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                        break;
+                    }
+
                     default:
                         throw new NotImplementedException("TODO");
                 }

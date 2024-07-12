@@ -29,6 +29,10 @@ public class PatternTests {
         });
     }
 
+    // TODO
+    // template with non existent var name
+    // template with non matching value
+
     private static Tree Leaf(byte input) => new Tree.Leaf(input);
     private static Tree Node(Tree left, Tree right) => new Tree.Node(left, right);
 
