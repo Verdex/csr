@@ -7,6 +7,11 @@ public interface IMatchable<T> {
     void Deconstruct(out Type id, out IEnumerable<T> contents);
 }
 
+// TODO : all of the IEnumerables here should be List.  The constructor functions
+// can continue to be IEnumerable, but I don't want to end up with any lazy computations
+// (And in fact the constructor functions should remain ienumerable to avoid getting any
+//  collections that will be randomly changed by someone else.  technically immutable list would
+//  work as well)
 public abstract record Pattern<T> where T : IMatchable<T> {
     private Pattern() { }
 
