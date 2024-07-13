@@ -54,6 +54,9 @@ public class PatternTests {
     // TODO
     // fail template with non existent var name
     // fail template with non matching value
+    // anything with a switch to alt inside of it needs a failure test where it both does and does not switch to alt
+    // {| [| a, ^ |] ; $a |} ~ [1, 1, 2, 2, 3, 3] => a = 1, a = 2, a = 3
+    // Blah ( capture a, {| Other($a, ^, ^) ; ... |}) // And maybe also with first path item being a list path
 
     private static Tree Leaf(byte input) => new Tree.Leaf(input);
     private static Tree Node(Tree left, Tree right) => new Tree.Node(left, right);
