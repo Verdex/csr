@@ -226,6 +226,23 @@ public static class Pattern {
                         break;
                     }
 
+                    case Pattern<T>.SubContentPath(var ps): {
+                        var (_, cs) = data;
+                        if (ps.Count <= cs.Count) {
+                            
+                        }
+                        else {
+                            if (_alternatives.Count > 0) {
+                                SwitchToAlternative();
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+
+                        break;
+                    }
+
                     case Pattern<T>.Predicate(var p): {
                         if (!p(data)) {
                             if (_alternatives.Count > 0) {
@@ -245,7 +262,12 @@ public static class Pattern {
                     }
 
                     default:
-                        throw new NotImplementedException("TODO");
+                        if (_alternatives.Count > 0) {
+                            SwitchToAlternative();
+                        }
+                        else {
+                            return false;
+                        }
                 }
             }
 
