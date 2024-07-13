@@ -168,6 +168,32 @@ public static class Pattern {
                         break;
                     }
 
+                    case Pattern<T>.PathNext:
+                        _nexts.Add(data);
+                        break;
+
+                    case Pattern<T>.Path(var ps) when ps.Count == 0: break;
+                    case Pattern<T>.Path(var ps): {
+                        var e = (PatternEnumerator<T>)data.Find(ps[0]).GetEnumerator();
+
+                        e._captures.AddRange(_captures);
+
+                        // A failure to move next means that the entire Path has failed
+                        if (!e.MoveNext()) { 
+                            if (_alternatives.Count > 0) {
+                                SwitchToAlternative();
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+
+
+                        var l = e._nexts;
+                        
+                        break;
+                    }
+
                     case Pattern<T>.Predicate(var p): {
                         if (!p(data)) {
                             if (_alternatives.Count > 0) {
