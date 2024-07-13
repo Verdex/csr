@@ -27,7 +27,7 @@ public abstract record Pattern<T> where T : IMatchable<T> {
     public record SubContentPath(IEnumerable<Pattern<T>> Ps) : Pattern<T>;
 
     public record Predicate(Func<T, bool> Pred) : Pattern<T>;
-    public record MatchWith(Func<IDictionary<string, T>, Pattern<T>> Func) : Pattern<T>;
+    public record MatchWith(Func<IReadOnlyDictionary<string, T>, Pattern<T>> Func) : Pattern<T>;
 }
 
 public static class Pattern {
@@ -48,7 +48,7 @@ public static class Pattern {
     public static Pattern<T> SubContentPath<T>(IEnumerable<Pattern<T>> patterns) where T : IMatchable<T> => new Pattern<T>.SubContentPath(patterns);
 
     public static Pattern<T> Predicate<T>(Func<T, bool> predicate) where T : IMatchable<T> => new Pattern<T>.Predicate(predicate);
-    public static Pattern<T> MatchWith<T>(Func<IDictionary<string, T>, Pattern<T>> func) where T : IMatchable<T> => new Pattern<T>.MatchWith(func);
+    public static Pattern<T> MatchWith<T>(Func<IReadOnlyDictionary<string, T>, Pattern<T>> func) where T : IMatchable<T> => new Pattern<T>.MatchWith(func);
 
     public static IEnumerable<IEnumerable<(string Name, T Item)>> Find<T>(this T data, Pattern<T> pattern) where T : IMatchable<T> =>
         new PatternEnumerable<T>(data, pattern);
