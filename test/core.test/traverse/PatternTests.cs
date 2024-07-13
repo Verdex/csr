@@ -18,7 +18,7 @@ public class PatternTests {
     }
 
     [Test]
-    public void FindWithTemplateVar() {
+    public void FindWithExactTemplateVar() {
         var t = Node(Leaf(0), Leaf(0));
         var output = t.Find(Exact<Tree>(typeof(Tree.Node), [Capture<Tree>("a"), TemplateVar<Tree>("a")])).Select(x => x.ToList()).ToList();
         Assert.Multiple(() => {
@@ -29,9 +29,31 @@ public class PatternTests {
         });
     }
 
+    [Test]
+    public void FindWithContentsTemplateVar() {
+        var t = Node(Leaf(0), Leaf(0));
+        var output = t.Find(Contents<Tree>([Capture<Tree>("a"), TemplateVar<Tree>("a")])).Select(x => x.ToList()).ToList();
+        Assert.Multiple(() => {
+            Assert.That(output.Count, Is.EqualTo(1));
+            Assert.That(output[0].Count, Is.EqualTo(1));
+            Assert.That(output[0][0].Name, Is.EqualTo("a"));
+            Assert.That(output[0][0].Item, Is.EqualTo(Leaf(0)));
+        });
+    }
+
+    [Test]
+    public void FindWithKind() {
+        var t = Node(Leaf(0), Leaf(0));
+        var output = t.Find(Kind<Tree>(typeof(Tree.Node))).Select(x => x.ToList()).ToList();
+        Assert.Multiple(() => {
+            Assert.That(output.Count, Is.EqualTo(1));
+            Assert.That(output[0].Count, Is.EqualTo(0));
+        });
+    }
+
     // TODO
-    // template with non existent var name
-    // template with non matching value
+    // fail template with non existent var name
+    // fail template with non matching value
 
     private static Tree Leaf(byte input) => new Tree.Leaf(input);
     private static Tree Node(Tree left, Tree right) => new Tree.Node(left, right);
