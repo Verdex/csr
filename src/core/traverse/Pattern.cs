@@ -164,6 +164,24 @@ public static class Pattern {
                         break;
                     }
 
+                    case Pattern<T>.Predicate(var p): {
+                        if (!p(data)) {
+                            if (_alternatives.Count > 0) {
+                                SwitchToAlternative();
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                        break;
+                    }
+
+                    case Pattern<T>.MatchWith(var f): {
+                        var p = f(_captures.ToDictionary(c => c.Item1, c => c.Item2));
+                        _work.Push((data, p));
+                        break;
+                    }
+
                     default:
                         throw new NotImplementedException("TODO");
                 }
