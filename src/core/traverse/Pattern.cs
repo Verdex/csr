@@ -23,7 +23,7 @@ public abstract record Pattern<T> where T : IMatchable<T> {
     public record Or(Pattern<T> Left, Pattern<T> Right) : Pattern<T>;
 
     public record PathNext : Pattern<T>;
-    public record Path(IEnumerable<Pattern<T>> Ps) : Pattern<T>;
+    public record Path(List<Pattern<T>> Ps) : Pattern<T>;
     public record SubContentPath(IEnumerable<Pattern<T>> Ps) : Pattern<T>;
 
     public record Predicate(Func<T, bool> Pred) : Pattern<T>;
@@ -44,7 +44,7 @@ public static class Pattern {
     public static Pattern<T> Or<T>(Pattern<T> left, Pattern<T> right) where T : IMatchable<T> => new Pattern<T>.Or(left, right);
 
     public static Pattern<T> PathNext<T>() where T : IMatchable<T> => new Pattern<T>.PathNext();
-    public static Pattern<T> Path<T>(IEnumerable<Pattern<T>> patterns) where T : IMatchable<T> => new Pattern<T>.Path(patterns);
+    public static Pattern<T> Path<T>(IEnumerable<Pattern<T>> patterns) where T : IMatchable<T> => new Pattern<T>.Path(patterns.ToList());
     public static Pattern<T> SubContentPath<T>(IEnumerable<Pattern<T>> patterns) where T : IMatchable<T> => new Pattern<T>.SubContentPath(patterns);
 
     public static Pattern<T> Predicate<T>(Func<T, bool> predicate) where T : IMatchable<T> => new Pattern<T>.Predicate(predicate);
