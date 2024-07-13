@@ -174,6 +174,8 @@ public static class Pattern {
 
                     case Pattern<T>.Path(var ps) when ps.Count == 0: break;
                     case Pattern<T>.Path(var ps): {
+                        // Note:  Current work cloned off for alternatives
+                        var altWork = Dup(_work);
                         var e = (PatternEnumerator<T>)data.Find(ps[0]).GetEnumerator();
 
                         // Note:  Inject existing _captures into e's _captures so that
@@ -199,12 +201,32 @@ public static class Pattern {
                             var nextPathPattern = Path<T>(ps[1..]);
 
                             foreach( var next in e._nexts[1..] ) {
-
+                                var w = Dup(_work);
+                                w.Push((next, nextPathPattern));
+                                AddAlternative(w, nexts: []);
                             }
 
                             _work.Push((nextPathData, nextPathPattern));
                         }
 
+                        // Note:  For each alternative of e, stuff all of them into alternatives
+                        while (e.MoveNext()) {
+                            var captures = e.Current.ToList();
+
+                            if (e._nexts.Count > 0) {
+                                var nextPathPattern = Path<T>(ps[1..]);
+
+                                foreach( var next in e._nexts ) {
+                                    var w = Dup(altWork);
+                                    w.Push((next, nextPathPattern));
+                                    AddAlternative(w, captures: captures, nexts: []);
+                                }
+                            }
+                            else {
+                                AddAlternative(Dup(altWork), captures: captures, nexts: []);
+                            }
+
+                        }
                         
                         break;
                     }
@@ -247,9 +269,9 @@ public static class Pattern {
 
         public void Dispose() { }
 
-        private void AddAlternative(Stack<(T, Pattern<T>)> work) {
-            var c = Dup(_captures);
-            var n = Dup(_nexts);
+        private void AddAlternative(Stack<(T, Pattern<T>)> work, List<(String, T)>? captures = null, List<T>? nexts = null) {
+            var c = captures ?? Dup(_captures);
+            var n = nexts ?? Dup(_nexts);
             _alternatives.Push((c, work, n));
         }
 
