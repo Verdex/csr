@@ -155,11 +155,10 @@ public static class Pattern {
                         break;
                     }
 
-                    case Pattern<T>.And a: {
+                    case Pattern<T>.And a:
                         _work.Push((data, a.Right));
                         _work.Push((data, a.Left));
                         break;
-                    }
 
                     case Pattern<T>.Or o: {
                         var w = Dup(_work);
