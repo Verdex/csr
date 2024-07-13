@@ -7,11 +7,6 @@ public interface IMatchable<T> {
     void Deconstruct(out Type id, out IEnumerable<T> contents);
 }
 
-// TODO : all of the IEnumerables here should be List.  The constructor functions
-// can continue to be IEnumerable, but I don't want to end up with any lazy computations
-// (And in fact the constructor functions should remain ienumerable to avoid getting any
-//  collections that will be randomly changed by someone else.  technically immutable list would
-//  work as well)
 public abstract record Pattern<T> where T : IMatchable<T> {
     private Pattern() { }
 
@@ -20,8 +15,8 @@ public abstract record Pattern<T> where T : IMatchable<T> {
     public record Capture(string Name) : Pattern<T>;
     public record TemplateVar(string Name) : Pattern<T>;
 
-    public record Exact(Type Id, IEnumerable<Pattern<T>> Cs) : Pattern<T>;
-    public record Contents(IEnumerable<Pattern<T>> Cs) : Pattern<T>;
+    public record Exact(Type Id, List<Pattern<T>> Cs) : Pattern<T>;
+    public record Contents(List<Pattern<T>> Cs) : Pattern<T>;
     public record Kind(Type Id) : Pattern<T>;
 
     public record And(Pattern<T> Left, Pattern<T> Right) : Pattern<T>;
@@ -29,7 +24,7 @@ public abstract record Pattern<T> where T : IMatchable<T> {
 
     public record PathNext : Pattern<T>;
     public record Path(List<Pattern<T>> Ps) : Pattern<T>;
-    public record SubContentPath(IEnumerable<Pattern<T>> Ps) : Pattern<T>;
+    public record SubContentPath(List<Pattern<T>> Ps) : Pattern<T>;
 
     public record Predicate(Func<T, bool> Pred) : Pattern<T>;
     public record MatchWith(Func<IReadOnlyDictionary<string, T>, Pattern<T>> Func) : Pattern<T>;
@@ -41,8 +36,8 @@ public static class Pattern {
     public static Pattern<T> Capture<T>(string name) where T : IMatchable<T> => new Pattern<T>.Capture(name);
     public static Pattern<T> TemplateVar<T>(string name) where T : IMatchable<T> => new Pattern<T>.TemplateVar(name);
 
-    public static Pattern<T> Exact<T>(Type id, IEnumerable<Pattern<T>> contents) where T : IMatchable<T> => new Pattern<T>.Exact(id, contents);
-    public static Pattern<T> Contents<T>(IEnumerable<Pattern<T>> contents) where T : IMatchable<T> => new Pattern<T>.Contents(contents);
+    public static Pattern<T> Exact<T>(Type id, IEnumerable<Pattern<T>> contents) where T : IMatchable<T> => new Pattern<T>.Exact(id, contents.ToList());
+    public static Pattern<T> Contents<T>(IEnumerable<Pattern<T>> contents) where T : IMatchable<T> => new Pattern<T>.Contents(contents.ToList());
     public static Pattern<T> Kind<T>(Type id) where T : IMatchable<T> => new Pattern<T>.Kind(id);
 
     public static Pattern<T> And<T>(Pattern<T> left, Pattern<T> right) where T : IMatchable<T> => new Pattern<T>.And(left, right);
@@ -50,7 +45,7 @@ public static class Pattern {
 
     public static Pattern<T> PathNext<T>() where T : IMatchable<T> => new Pattern<T>.PathNext();
     public static Pattern<T> Path<T>(IEnumerable<Pattern<T>> patterns) where T : IMatchable<T> => new Pattern<T>.Path(patterns.ToList());
-    public static Pattern<T> SubContentPath<T>(IEnumerable<Pattern<T>> patterns) where T : IMatchable<T> => new Pattern<T>.SubContentPath(patterns);
+    public static Pattern<T> SubContentPath<T>(IEnumerable<Pattern<T>> patterns) where T : IMatchable<T> => new Pattern<T>.SubContentPath(patterns.ToList());
 
     public static Pattern<T> Predicate<T>(Func<T, bool> predicate) where T : IMatchable<T> => new Pattern<T>.Predicate(predicate);
     public static Pattern<T> MatchWith<T>(Func<IReadOnlyDictionary<string, T>, Pattern<T>> func) where T : IMatchable<T> => new Pattern<T>.MatchWith(func);
