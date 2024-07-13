@@ -176,9 +176,11 @@ public static class Pattern {
                     case Pattern<T>.Path(var ps): {
                         var e = (PatternEnumerator<T>)data.Find(ps[0]).GetEnumerator();
 
+                        // Note:  Inject existing _captures into e's _captures so that
+                        // template variables work inside of the inner Find.
                         e._captures.AddRange(_captures);
 
-                        // A failure to move next means that the entire Path has failed
+                        // Note: A failure to move next means that the entire Path has failed
                         if (!e.MoveNext()) { 
                             if (_alternatives.Count > 0) {
                                 SwitchToAlternative();
@@ -188,8 +190,21 @@ public static class Pattern {
                             }
                         }
 
+                        // Note:  e.Current contains all of the existing _captures, so to
+                        // avoid duplicate captures assign the Current instead of appending it
+                        _captures = e.Current.ToList();
 
-                        var l = e._nexts;
+                        if (e._nexts.Count > 0) {
+                            var nextPathData = e._nexts[0];
+                            var nextPathPattern = Path<T>(ps[1..]);
+
+                            foreach( var next in e._nexts[1..] ) {
+
+                            }
+
+                            _work.Push((nextPathData, nextPathPattern));
+                        }
+
                         
                         break;
                     }
