@@ -238,8 +238,26 @@ public static class Pattern {
 
                     case Pattern<T>.SubContentPath(var ps): {
                         var (_, cs) = data;
-                        if (ps.Count <= cs.Count) {
-                            
+                        var dataContents = cs.ToList();
+                        if (ps.Count <= dataContents.Count) {
+                            foreach( var index in Enumerable.Range(1, (dataContents.Count - ps.Count) - 1) ) { // TODO
+                                var w = Dup(_work);
+
+                                var targetData = dataContents[index..(index + ps.Count)]; // TODO
+
+                                foreach( var x in targetData.Zip(ps).Reverse() ) {
+                                    w.Push(x);
+                                }
+
+                                AddAlternative(w);
+                            }
+
+                            {
+                                var targetData = dataContents[0..ps.Count];
+                                foreach( var x in targetData.Zip(ps).Reverse() ) {
+                                    _work.Push(x);
+                                }
+                            }
                         }
                         else {
                             if (_alternatives.Count > 0) {
