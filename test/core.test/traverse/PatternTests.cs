@@ -63,6 +63,18 @@ public class PatternTests {
         });
     }
 
+    [Test]
+    public void FindWithAnd() {
+        var t = Leaf(77);
+        var output = F(t, And<Tree>(Predicate<Tree>(x => x is Tree.Leaf(Value: 77)), Capture<Tree>("x")));
+        Assert.Multiple(() => {
+            Assert.That(output.Count, Is.EqualTo(1));
+            Assert.That(output[0].Count, Is.EqualTo(1));
+            Assert.That(output[0][0].Name, Is.EqualTo("x"));
+            Assert.That(output[0][0].Item, Is.EqualTo(Leaf(77)));
+        });
+    }
+
     // TODO
     // fail template with non existent var name
     // fail template with non matching value
