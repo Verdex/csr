@@ -7,10 +7,12 @@ namespace csr.test.core.traverse;
 [TestFixture]
 public class PatternTests {
 
+    private static List<List<(string Name, Tree Item)>> F(Tree d, Pattern<Tree> p) => d.Find<Tree>(p).Select(x => x.ToList()).ToList();
+
     [Test]
     public void FindWithWild() { 
         var t = Leaf(7);
-        var output = t.Find(Wild<Tree>()).Select(x => x.ToList()).ToList();
+        var output = F(t, Wild<Tree>());
         Assert.Multiple(() => {
             Assert.That(output.Count, Is.EqualTo(1));
             Assert.That(output[0].Count, Is.EqualTo(0));
@@ -20,7 +22,7 @@ public class PatternTests {
     [Test]
     public void FindWithExactTemplateVar() {
         var t = Node(Leaf(0), Leaf(0));
-        var output = t.Find(Exact<Tree>(typeof(Tree.Node), [Capture<Tree>("a"), TemplateVar<Tree>("a")])).Select(x => x.ToList()).ToList();
+        var output = F(t, Exact<Tree>(typeof(Tree.Node), [Capture<Tree>("a"), TemplateVar<Tree>("a")]));
         Assert.Multiple(() => {
             Assert.That(output.Count, Is.EqualTo(1));
             Assert.That(output[0].Count, Is.EqualTo(1));
@@ -32,7 +34,7 @@ public class PatternTests {
     [Test]
     public void FindWithContentsTemplateVar() {
         var t = Node(Leaf(0), Leaf(0));
-        var output = t.Find(Contents<Tree>([Capture<Tree>("a"), TemplateVar<Tree>("a")])).Select(x => x.ToList()).ToList();
+        var output = F(t, Contents<Tree>([Capture<Tree>("a"), TemplateVar<Tree>("a")]));
         Assert.Multiple(() => {
             Assert.That(output.Count, Is.EqualTo(1));
             Assert.That(output[0].Count, Is.EqualTo(1));
@@ -44,7 +46,17 @@ public class PatternTests {
     [Test]
     public void FindWithKind() {
         var t = Node(Leaf(0), Leaf(0));
-        var output = t.Find(Kind<Tree>(typeof(Tree.Node))).Select(x => x.ToList()).ToList();
+        var output = F(t, Kind<Tree>(typeof(Tree.Node)));
+        Assert.Multiple(() => {
+            Assert.That(output.Count, Is.EqualTo(1));
+            Assert.That(output[0].Count, Is.EqualTo(0));
+        });
+    }
+
+    [Test]
+    public void FindWithPredicate() { 
+        var t = Leaf(77);
+        var output = F(t, Predicate<Tree>(x => x is Tree.Leaf(Value: 77)));
         Assert.Multiple(() => {
             Assert.That(output.Count, Is.EqualTo(1));
             Assert.That(output[0].Count, Is.EqualTo(0));
@@ -57,6 +69,9 @@ public class PatternTests {
     // anything with a switch to alt inside of it needs a failure test where it both does and does not switch to alt
     // {| [| a, ^ |] ; $a |} ~ [1, 1, 2, 2, 3, 3] => a = 1, a = 2, a = 3
     // Blah ( capture a, {| Other($a, ^, ^) ; ... |}) // And maybe also with first path item being a list path
+
+    // Failures with no alternatives
+    // the same failures with alternatives
 
     private static Tree Leaf(byte input) => new Tree.Leaf(input);
     private static Tree Node(Tree left, Tree right) => new Tree.Node(left, right);
