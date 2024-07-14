@@ -115,8 +115,9 @@ public static class Pattern {
 
                     case Pattern<T>.Exact e: {
                         var (id, cs) = data;
-                        if (id == e.Id) {
-                            foreach( var w in cs.Zip(e.Cs).Reverse() ) {
+                        var dataContents = cs.ToList();
+                        if (id == e.Id && e.Cs.Count == dataContents.Count) {
+                            foreach( var w in dataContents.Zip(e.Cs).Reverse() ) {
                                 _work.Push(w);
                             }
                         }
@@ -131,8 +132,17 @@ public static class Pattern {
 
                     case Pattern<T>.Contents c: {
                         var (_, cs) = data;
-                        foreach( var w in cs.Zip(c.Cs).Reverse() ) {
-                            _work.Push(w);
+                        var dataContents = cs.ToList();
+                        if (dataContents.Count == c.Cs.Count) {
+                            foreach( var w in cs.Zip(c.Cs).Reverse() ) {
+                                _work.Push(w);
+                            }
+                        }
+                        else if(_alternatives.Count > 0) {
+                            SwitchToAlternative();
+                        }
+                        else { 
+                            return false;
                         }
                         break;
                     }
@@ -268,6 +278,7 @@ public static class Pattern {
                         else {
                             return false;
                         }
+                        break;
                 }
             }
 
