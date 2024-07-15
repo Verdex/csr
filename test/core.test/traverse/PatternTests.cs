@@ -8,71 +8,59 @@ namespace csr.test.core.traverse;
 public class PatternTests {
 
     private static List<List<(string Name, Tree Item)>> F(Tree d, Pattern<Tree> p) => d.Find<Tree>(p).Select(x => x.ToList()).ToList();
+    private static void A(List<List<(string Name, Tree Item)>> output, List<List<(string Name, Tree Item)>> expected) {
+        Assert.Multiple(() => {
+            Assert.That(output.Count, Is.EqualTo(expected.Count));
+            foreach( var (o, e, i) in output.Zip(expected).Select((x, index) => (x.Item1, x.Item2, index) )) {
+                Assert.That(o.Count, Is.EqualTo(e.Count), $"Index {i}");
+                foreach( var (olet, elet) in o.Zip(e) ) {
+                    Assert.That(olet.Name, Is.EqualTo(elet.Name), $"Index {i}");
+                    Assert.That(olet.Item, Is.EqualTo(elet.Item), $"Index {i}");
+                }
+            }
+        });
+    }
 
     [Test]
     public void FindWithWild() { 
         var t = Leaf(7);
         var output = F(t, Wild<Tree>());
-        Assert.Multiple(() => {
-            Assert.That(output.Count, Is.EqualTo(1));
-            Assert.That(output[0].Count, Is.EqualTo(0));
-        });
+        A(output, [[]]);
     }
 
     [Test]
     public void FindWithExactTemplateVar() {
         var t = Node(Leaf(0), Leaf(0));
         var output = F(t, Exact<Tree>(typeof(Tree.Node), [Capture<Tree>("a"), TemplateVar<Tree>("a")]));
-        Assert.Multiple(() => {
-            Assert.That(output.Count, Is.EqualTo(1));
-            Assert.That(output[0].Count, Is.EqualTo(1));
-            Assert.That(output[0][0].Name, Is.EqualTo("a"));
-            Assert.That(output[0][0].Item, Is.EqualTo(Leaf(0)));
-        });
+        A(output, [[("a", Leaf(0))]]);
     }
 
     [Test]
     public void FindWithContentsTemplateVar() {
         var t = Node(Leaf(0), Leaf(0));
         var output = F(t, Contents<Tree>([Capture<Tree>("a"), TemplateVar<Tree>("a")]));
-        Assert.Multiple(() => {
-            Assert.That(output.Count, Is.EqualTo(1));
-            Assert.That(output[0].Count, Is.EqualTo(1));
-            Assert.That(output[0][0].Name, Is.EqualTo("a"));
-            Assert.That(output[0][0].Item, Is.EqualTo(Leaf(0)));
-        });
+        A(output, [[("a", Leaf(0))]]);
     }
 
     [Test]
     public void FindWithKind() {
         var t = Node(Leaf(0), Leaf(0));
         var output = F(t, Kind<Tree>(typeof(Tree.Node)));
-        Assert.Multiple(() => {
-            Assert.That(output.Count, Is.EqualTo(1));
-            Assert.That(output[0].Count, Is.EqualTo(0));
-        });
+        A(output, [[]]);
     }
 
     [Test]
     public void FindWithPredicate() { 
         var t = Leaf(77);
         var output = F(t, Predicate<Tree>(x => x is Tree.Leaf(Value: 77)));
-        Assert.Multiple(() => {
-            Assert.That(output.Count, Is.EqualTo(1));
-            Assert.That(output[0].Count, Is.EqualTo(0));
-        });
+        A(output, [[]]);
     }
 
     [Test]
     public void FindWithAnd() {
         var t = Leaf(77);
         var output = F(t, And<Tree>(Predicate<Tree>(x => x is Tree.Leaf(Value: 77)), Capture<Tree>("x")));
-        Assert.Multiple(() => {
-            Assert.That(output.Count, Is.EqualTo(1));
-            Assert.That(output[0].Count, Is.EqualTo(1));
-            Assert.That(output[0][0].Name, Is.EqualTo("x"));
-            Assert.That(output[0][0].Item, Is.EqualTo(Leaf(77)));
-        });
+        A(output, [[("x", Leaf(77))]]);
     }
 
     // TODO
