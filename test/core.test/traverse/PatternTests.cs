@@ -86,6 +86,20 @@ public class PatternTests {
                   , [("a", Leaf(3)), ("b", Leaf(4))]
                   ]);
     }
+
+    [Test]
+    public void FindWithPath() {
+        var t = Node(Node(Leaf(1), Leaf(2)), Node(Leaf(3), Leaf(4)));
+        var output = F(t, Path<Tree>([ Contents<Tree>([PathNext<Tree>(), PathNext<Tree>()])
+                                     , Contents<Tree>([PathNext<Tree>(), PathNext<Tree>()])
+                                     , Capture<Tree>("a")
+                                     ]));
+        A(output, [ [("a", Leaf(1))]
+                  , [("a", Leaf(2))] 
+                  , [("a", Leaf(3))] 
+                  , [("a", Leaf(4))] 
+                  ]);
+    }
     // TODO
     // fail template with non existent var name
     // fail template with non matching value
