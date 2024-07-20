@@ -100,9 +100,44 @@ public class PatternTests {
                   , [("a", Leaf(4))] 
                   ]);
     }
+
+    [Test]
+    public void FailTemplateWithUnknownName() {
+        var t = Leaf(1);
+        var output = F(t, TemplateVar<Tree>("x"));
+        A(output, []);
+    }
+
+    [Test]
+    public void FailTemplateWithNonMatchingValue() {
+        var t = Node(Leaf(1), Leaf(2));
+        var output = F(t, Contents<Tree>([Capture<Tree>("x"), TemplateVar<Tree>("x")]));
+        A(output, []);
+    }
+
+    [Test]
+    public void FindCaptureWithFirstOr() {
+        var t = Leaf(1);
+        var output = F(t, Or<Tree>(Capture<Tree>("a"), Exact<Tree>(typeof(int), [])));
+        A(output, [[("a", Leaf(1))]]);
+    }
+
+    [Test]
+    public void FindCaptureWithSecondOr() {
+        var t = Leaf(1);
+        var output = F(t, Or<Tree>(Exact<Tree>(typeof(int), []), Capture<Tree>("a")));
+        A(output, [[("a", Leaf(1))]]);
+    }
+
+    [Test]
+    public void FindCaptureWithBothOr() {
+        var t = Leaf(1);
+        var output = F(t, Or<Tree>(Capture<Tree>("a"), Capture<Tree>("a")));
+        A(output, [[("a", Leaf(1))], [("a", Leaf(1))]]);
+    }
     // TODO
-    // fail template with non existent var name
-    // fail template with non matching value
+    // fail template with non existent var name (in path)
+    // fail template with non matching value (in path)
     // anything with a switch to alt inside of it needs a failure test where it both does and does not switch to alt
     // {| [| a, ^ |] ; $a |} ~ [1, 1, 2, 2, 3, 3] => a = 1, a = 2, a = 3
     // Blah ( capture a, {| Other($a, ^, ^) ; ... |}) // And maybe also with first path item being a list path
