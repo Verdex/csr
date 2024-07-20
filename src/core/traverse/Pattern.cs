@@ -243,7 +243,7 @@ public static class Pattern {
                             foreach( var index in Enumerable.Range(1, (dataContents.Count - ps.Count)).Reverse() ) { 
                                 var w = Dup(_work);
 
-                                var targetData = dataContents[index..(index + ps.Count)]; // TODO
+                                var targetData = dataContents[index..(index + ps.Count)]; 
 
                                 foreach( var x in targetData.Zip(ps).Reverse() ) {
                                     w.Push(x);
