@@ -77,6 +77,15 @@ public class PatternTests {
         A(output, [[]]);
     }
 
+    [Test]
+    public void FindWithSubContentPath() {
+        var t = L(Leaf(1), Leaf(2), Leaf(3), Leaf(4));
+        var output = F(t, SubContentPath<Tree>([Capture<Tree>("a"), Capture<Tree>("b")]));
+        A(output, [ [("a", Leaf(1)), ("b", Leaf(2))]
+                  , [("a", Leaf(2)), ("b", Leaf(3))]
+                  , [("a", Leaf(3)), ("b", Leaf(4))]
+                  ]);
+    }
     // TODO
     // fail template with non existent var name
     // fail template with non matching value
