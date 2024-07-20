@@ -89,12 +89,14 @@ public class PatternTests {
 
     private static Tree Leaf(byte input) => new Tree.Leaf(input);
     private static Tree Node(Tree left, Tree right) => new Tree.Node(left, right);
+    private static Tree L(params Tree[] xs) => new Tree.L(xs.ToList());
 
     private abstract record Tree : IMatchable<Tree> {
         private Tree() { }
 
         public record Leaf(byte Value) : Tree;
         public record Node(Tree Left, Tree Right) : Tree;
+        public record L(List<Tree> Items) : Tree;
 
         public void Deconstruct(out Type id, out IEnumerable<Tree> contents) {
             switch (this) {
@@ -105,6 +107,10 @@ public class PatternTests {
                 case Node n:
                     id = typeof(Node);
                     contents = [n.Left, n.Right];
+                    break;
+                case L l:
+                    id = typeof(L);
+                    contents = new List<Tree>(l.Items);
                     break;
                 default:
                     throw new NotImplementedException($"Unknown {nameof(Tree)} case {this.GetType()}");
