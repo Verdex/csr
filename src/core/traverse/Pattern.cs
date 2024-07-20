@@ -240,7 +240,7 @@ public static class Pattern {
                         var (_, cs) = data;
                         var dataContents = cs.ToList();
                         if (ps.Count <= dataContents.Count) {
-                            foreach( var index in Enumerable.Range(1, (dataContents.Count - ps.Count) - 1) ) { // TODO
+                            foreach( var index in Enumerable.Range(1, (dataContents.Count - ps.Count)).Reverse() ) { 
                                 var w = Dup(_work);
 
                                 var targetData = dataContents[index..(index + ps.Count)]; // TODO
