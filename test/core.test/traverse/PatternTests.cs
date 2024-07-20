@@ -63,6 +63,20 @@ public class PatternTests {
         A(output, [[("x", Leaf(77))]]);
     }
 
+    [Test]
+    public void FindWithOr() {
+        var t = Leaf(15);
+        var output = F(t, Or<Tree>(Wild<Tree>(), Wild<Tree>()));
+        A(output, [[], []]);
+    }
+
+    [Test]
+    public void FindWithMatchWith() {
+        var t = Leaf(77);
+        var output = F(t, MatchWith<Tree>( _ => Wild<Tree>()));
+        A(output, [[]]);
+    }
+
     // TODO
     // fail template with non existent var name
     // fail template with non matching value
