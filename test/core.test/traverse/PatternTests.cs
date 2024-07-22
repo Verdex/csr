@@ -135,6 +135,69 @@ public class PatternTests {
         var output = F(t, Or<Tree>(Capture<Tree>("a"), Capture<Tree>("a")));
         A(output, [[("a", Leaf(1))], [("a", Leaf(1))]]);
     }
+
+    [Test]
+    public void FailOr() {
+        var t = Leaf(1);
+        var output = F(t, Or<Tree>(Kind<Tree>(typeof(int)), Kind<Tree>(typeof(int))));
+        A(output, []);
+    }
+
+    [Test]
+    public void FailAndLeft() {
+        var t = Leaf(1);
+        var output = F(t, And<Tree>(Kind<Tree>(typeof(int)), Wild<Tree>()));
+        A(output, []);
+    }
+
+    [Test]
+    public void FailAndRight() {
+        var t = Leaf(1);
+        var output = F(t, And<Tree>(Wild<Tree>(), Kind<Tree>(typeof(int))));
+        A(output, []);
+    }
+
+    [Test]
+    public void FailAndBoth() {
+        var t = Leaf(1);
+        var output = F(t, And<Tree>(Kind<Tree>(typeof(int)), Kind<Tree>(typeof(int))));
+        A(output, []);
+    }
+
+    [Test]
+    public void FailContentsForLength() {
+        var t = Node(Leaf(1), Leaf(1));
+        var output = F(t, Contents<Tree>([Wild<Tree>()]));
+        A(output, []);
+    }
+
+    [Test]
+    public void FailExactForLength() {
+        var t = Node(Leaf(1), Leaf(1));
+        var output = F(t, Exact<Tree>(typeof(Tree.Node), [Wild<Tree>()]));
+        A(output, []);
+    }
+
+    [Test]
+    public void FailExactForType() {
+        var t = Node(Leaf(1), Leaf(1));
+        var output = F(t, Exact<Tree>(typeof(int), [Wild<Tree>(), Wild<Tree>()]));
+        A(output, []);
+    }
+
+    [Test]
+    public void FailPredicate() {
+        var t = Leaf(1);
+        var output = F(t, Predicate<Tree>(_ => false));
+        A(output, []);
+    }
+
+    [Test]
+    public void FailMatchWith() {
+        var t = Leaf(1);
+        var output = F(t, MatchWith<Tree>(_ => Predicate<Tree>(_ => false)));
+        A(output, []);
+    }
     // TODO
     // fail template with non existent var name (in path)
     // fail template with non matching value (in path)
@@ -144,6 +207,8 @@ public class PatternTests {
 
     // Failures with no alternatives
     // the same failures with alternatives
+
+    // Match with that looks at captures and works differently for different alternatives b/c captures change
 
     private static Tree Leaf(byte input) => new Tree.Leaf(input);
     private static Tree Node(Tree left, Tree right) => new Tree.Node(left, right);
