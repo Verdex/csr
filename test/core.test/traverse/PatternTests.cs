@@ -206,15 +206,33 @@ public class PatternTests {
         var output = F(t, MatchWith<Tree>(_ => Predicate<Tree>(_ => false)));
         A(output, []);
     }
+
+    [Test]
+    public void FindSubContentPathInPath() {
+        var t = L([Leaf(1), Leaf(1), Leaf(2), Leaf(2), Leaf(3), Leaf(3)]);
+        var output = F(t, Path<Tree>([SubContentPath<Tree>([Capture<Tree>("a"), PathNext<Tree>()]), TemplateVar<Tree>("a")]));
+        A(output, [[("a", Leaf(1))], [("a", Leaf(3))], [("a", Leaf(2))]]);
+    }
+
+    [Test]
+    public void FindPathInSubContentPath() {
+        var t = L([Node(Leaf(1), Leaf(2)), Leaf(3), Node(Leaf(4), Leaf(5)), Node(Leaf(5), Leaf(6)), Node(Leaf(6), Leaf(7))]);
+        var output = F(t, SubContentPath<Tree>([ Path<Tree>([Exact<Tree>(typeof(Tree.Node), [Wild<Tree>(), Capture<Tree>("a")])])
+                                               , Path<Tree>([Exact<Tree>(typeof(Tree.Node), [TemplateVar<Tree>("a"), Capture<Tree>("b")])])
+                                               ]));
+        A(output, [[("a", Leaf(5)), ("b", Leaf(6))], [("a", Leaf(6)), ("b", Leaf(7))]]);
+    }
+
     // TODO
     // fail template with non existent var name (in path)
     // fail template with non matching value (in path)
     // anything with a switch to alt inside of it needs a failure test where it both does and does not switch to alt
-    // {| [| a, ^ |] ; $a |} ~ [1, 1, 2, 2, 3, 3] => a = 1, a = 2, a = 3
     // Blah ( capture a, {| Other($a, ^, ^) ; ... |}) // And maybe also with first path item being a list path
+    // sub content path with three items
 
     // Failures with no alternatives
     // the same failures with alternatives
+    
 
     // Match with that looks at captures and works differently for different alternatives b/c captures change
 
