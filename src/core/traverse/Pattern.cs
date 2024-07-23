@@ -191,6 +191,8 @@ public static class Pattern {
                         if (!e.MoveNext()) { 
                             if (_alternatives.Count > 0) {
                                 SwitchToAlternative();
+                                // Note:  SwitchToAlternative has to be the last thing done in a case!
+                                break;
                             }
                             else {
                                 return false;
