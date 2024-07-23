@@ -20,6 +20,14 @@ public class PatternTests {
             }
         });
     }
+    private static void D(List<List<(string Name, Tree Item)>> input) {
+        foreach( var i in input ) {
+            foreach( var ilet in i ) {
+                Console.Write(ilet);
+            }
+            Console.Write("\n");
+        }
+    }
 
     [Test]
     public void FindWithWild() { 
