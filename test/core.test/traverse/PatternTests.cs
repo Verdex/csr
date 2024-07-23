@@ -223,12 +223,21 @@ public class PatternTests {
         A(output, [[("a", Leaf(5)), ("b", Leaf(6))], [("a", Leaf(6)), ("b", Leaf(7))]]);
     }
 
+    [Test]
+    public void FindSubContentPathWithThreeCaptures() {
+        var t = L([Leaf(1), Leaf(2), Leaf(3), Leaf(4), Leaf(5)]);
+        var output = F(t, SubContentPath<Tree>([ Capture<Tree>("a"), Capture<Tree>("b"), Capture<Tree>("c") ]));
+        A(output, [ [ ("a", Leaf(1)), ("b", Leaf(2)), ("c", Leaf(3)) ]
+                  , [ ("a", Leaf(2)), ("b", Leaf(3)), ("c", Leaf(4)) ]
+                  , [ ("a", Leaf(3)), ("b", Leaf(4)), ("c", Leaf(5)) ]
+                  ]);
+    }
+
     // TODO
     // fail template with non existent var name (in path)
     // fail template with non matching value (in path)
     // anything with a switch to alt inside of it needs a failure test where it both does and does not switch to alt
     // Blah ( capture a, {| Other($a, ^, ^) ; ... |}) // And maybe also with first path item being a list path
-    // sub content path with three items
 
     // Failures with no alternatives
     // the same failures with alternatives
