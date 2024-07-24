@@ -333,16 +333,37 @@ public class PatternTests {
         A(output, [[("b", Leaf(1)), ("c", Leaf(2))]]);
     }
 
-    // zero length path
+    [Test]
+    public void PredicateShouldFailInAlternative() {
+        var t = Node(Leaf(1), Leaf(2));
+        var output = F(t, Or<Tree>(Predicate<Tree>(_ => false), Capture<Tree>("a")));
+        A(output, [[("a", Node(Leaf(1), Leaf(2)))]]);
+    }
 
-    // TODO
-    // anything with a switch to alt inside of it needs a failure test where it both does and does not switch to alt
+    [Test]
+    public void FindZeroLengthPath() {
+        var t = Leaf(1);
+        var output = F(t, Path<Tree>([]));
+        A(output, [[]]);
+    }
 
-    // Failures with no alternatives
-    // the same failures with alternatives
-    
-
-    // Match with that looks at captures and works differently for different alternatives b/c captures change
+    [Test]
+    public void FindMatchWithInSubContentPath() {
+        static Pattern<Tree> With(IReadOnlyDictionary<String, Tree> dict) {
+            if (dict["a"] is Tree.Leaf(var x)) {
+                return Predicate<Tree>(v => {
+                    if (v is Tree.Leaf(var y)) {
+                        return y == x + 1;
+                    }
+                    return false;
+                });
+            }
+            return Wild<Tree>();
+        }
+        var t = L(Leaf(1), Leaf(2), Leaf(3), Leaf(4), Leaf(7));
+        var output = F(t, SubContentPath<Tree>([Capture<Tree>("a"), MatchWith<Tree>(With)]));
+        A(output, [[("a", Leaf(1))], [("a", Leaf(2))], [("a", Leaf(3))]]);
+    }
 
     private static Tree Leaf(byte input) => new Tree.Leaf(input);
     private static Tree Node(Tree left, Tree right) => new Tree.Node(left, right);
