@@ -233,6 +233,34 @@ public class PatternTests {
                   ]);
     }
 
+    [Test]
+    public void UseCaptureFromExactPatternInPath() {
+        var t = Node(Leaf(1), L(Leaf(1), Leaf(2), Leaf(3)));
+        var output = F(t, Exact<Tree>(typeof(Tree.Node), [Capture<Tree>("a"), 
+            Path<Tree>([Exact<Tree>(typeof(Tree.L), [TemplateVar<Tree>("a"), PathNext<Tree>(), PathNext<Tree>()])
+                       , Capture<Tree>("b")
+                       ])]));
+        A(output, [ [("a", Leaf(1)), ("b", Leaf(2))]
+                  , [("a", Leaf(1)), ("b", Leaf(3))] 
+                  ]);
+    }
+
+    [Test]
+    public void UsePathCapturesFromExactPatternInPath() { // TODO also sub content path  (also same thing but with failure) [also some all over again sub content path both]
+        var t = Node(Node(Node(Leaf(1), Leaf(4)), Node(Leaf(1), Leaf(5))), L(Leaf(1), Leaf(2), Leaf(3)));
+        var output = F(t, Exact<Tree>(typeof(Tree.Node), [ Path<Tree>( [ Exact<Tree>(typeof(Tree.Node), [PathNext<Tree>(), PathNext<Tree>()])
+                                                                       , Exact<Tree>(typeof(Tree.Node), [Capture<Tree>("a"), Capture<Tree>("c")])
+                                                                       ]), 
+            Path<Tree>([Exact<Tree>(typeof(Tree.L), [TemplateVar<Tree>("a"), PathNext<Tree>(), PathNext<Tree>()])
+                       , Capture<Tree>("b")
+                       ])]));
+        A(output, [ [("a", Leaf(1)), ("c", Leaf(4)), ("b", Leaf(2))]
+                  , [("a", Leaf(1)), ("c", Leaf(4)), ("b", Leaf(3))] 
+                  , [("a", Leaf(1)), ("c", Leaf(5)), ("b", Leaf(2))] 
+                  , [("a", Leaf(1)), ("c", Leaf(5)), ("b", Leaf(3))] 
+                  ]);
+    }
+
     // TODO
     // fail template with non existent var name (in path)
     // fail template with non matching value (in path)
