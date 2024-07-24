@@ -311,6 +311,30 @@ public class PatternTests {
                   , [("a", Leaf(2)), ("c", Leaf(5)), ("b", Leaf(3))] 
                   ]);
     }
+
+    [Test]
+    public void SubContentPathShouldFailForShortData() {
+        var t = Node(Leaf(1), Leaf(2));
+        var output = F(t, SubContentPath<Tree>([Wild<Tree>(), Wild<Tree>(), Wild<Tree>()]));
+        A(output, []);
+    }
+
+    [Test]
+    public void SubContentPathShouldFailForShortDataInAlternative() {
+        var t = Node(Leaf(1), Leaf(2));
+        var output = F(t, Or<Tree>(SubContentPath<Tree>([Wild<Tree>(), Wild<Tree>(), Wild<Tree>()]), Capture<Tree>("a")));
+        A(output, [[("a", Node(Leaf(1), Leaf(2)))]]);
+    }
+
+    [Test]
+    public void ContentShouldFailForUnequalDataInAlternative() {
+        var t = Node(Leaf(1), Leaf(2));
+        var output = F(t, Or<Tree>(Contents<Tree>([Capture<Tree>("a")]), Contents<Tree>([Capture<Tree>("b"), Capture<Tree>("c")])));
+        A(output, [[("b", Leaf(1)), ("c", Leaf(2))]]);
+    }
+
+    // zero length path
+
     // TODO
     // anything with a switch to alt inside of it needs a failure test where it both does and does not switch to alt
 
