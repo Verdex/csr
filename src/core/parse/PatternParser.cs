@@ -3,7 +3,7 @@ using csr.core.traverse;
 
 namespace csr.core.parse;
 
-public record ParseResult<T> {
+public abstract record ParseResult<T> {
     private ParseResult() { }
 
     public record Success(T Item) : ParseResult<T>;
@@ -18,3 +18,10 @@ public static class PatternParser {
         return Fail<T>("blarg");
     }
 }
+
+
+// TODO:
+/*
+    
+
+*/
