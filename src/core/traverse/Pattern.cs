@@ -1,5 +1,6 @@
 
 using System.Collections;
+using System.Collections.Immutable;
 
 namespace csr.core.traverse;
 
@@ -15,41 +16,22 @@ public abstract record Pattern<TID, TContent> where TContent : IMatchable<TID, T
     public record Capture(string Name) : Pattern<TID, TContent>;
     public record TemplateVar(string Name) : Pattern<TID, TContent>;
 
-    public record Exact(TID Id, List<Pattern<TID, TContent>> Cs) : Pattern<TID, TContent>;
-    public record Contents(List<Pattern<TID, TContent>> Cs) : Pattern<TID, TContent>;
+    public record Exact(TID Id, ImmutableList<Pattern<TID, TContent>> Cs) : Pattern<TID, TContent>;
+    public record Contents(ImmutableList<Pattern<TID, TContent>> Cs) : Pattern<TID, TContent>;
     public record Kind(TID Id) : Pattern<TID, TContent>;
 
     public record And(Pattern<TID, TContent> Left, Pattern<TID, TContent> Right) : Pattern<TID, TContent>;
     public record Or(Pattern<TID, TContent> Left, Pattern<TID, TContent> Right) : Pattern<TID, TContent>;
 
     public record PathNext : Pattern<TID, TContent>;
-    public record Path(List<Pattern<TID, TContent>> Ps) : Pattern<TID, TContent>;
-    public record SubContentPath(List<Pattern<TID, TContent>> Ps) : Pattern<TID, TContent>;
+    public record Path(ImmutableList<Pattern<TID, TContent>> Ps) : Pattern<TID, TContent>;
+    public record SubContentPath(ImmutableList<Pattern<TID, TContent>> Ps) : Pattern<TID, TContent>;
 
     public record Predicate(Func<TContent, bool> Pred) : Pattern<TID, TContent>;
     public record MatchWith(Func<IReadOnlyDictionary<string, TContent>, Pattern<TID, TContent>> Func) : Pattern<TID, TContent>;
 }
 
 public static class Pattern {
-    public static Pattern<TID, TContent> Wild<TID, TContent>() where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.Wild();
-
-    public static Pattern<TID, TContent> Capture<TID, TContent>(string name) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.Capture(name);
-    public static Pattern<TID, TContent> TemplateVar<TID, TContent>(string name) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.TemplateVar(name);
-
-    public static Pattern<TID, TContent> Exact<TID, TContent>(TID id, IEnumerable<Pattern<TID, TContent>> contents) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.Exact(id, contents.ToList());
-    public static Pattern<TID, TContent> Contents<TID, TContent>(IEnumerable<Pattern<TID, TContent>> contents) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.Contents(contents.ToList());
-    public static Pattern<TID, TContent> Kind<TID, TContent>(TID id) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.Kind(id);
-
-    public static Pattern<TID, TContent> And<TID, TContent>(Pattern<TID, TContent> left, Pattern<TID, TContent> right) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.And(left, right);
-    public static Pattern<TID, TContent> Or<TID, TContent>(Pattern<TID, TContent> left, Pattern<TID, TContent> right) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.Or(left, right);
-
-    public static Pattern<TID, TContent> PathNext<TID, TContent>() where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.PathNext();
-    public static Pattern<TID, TContent> Path<TID, TContent>(IEnumerable<Pattern<TID, TContent>> patterns) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.Path(patterns.ToList());
-    public static Pattern<TID, TContent> SubContentPath<TID, TContent>(IEnumerable<Pattern<TID, TContent>> patterns) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.SubContentPath(patterns.ToList());
-
-    public static Pattern<TID, TContent> Predicate<TID, TContent>(Func<TContent, bool> predicate) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.Predicate(predicate);
-    public static Pattern<TID, TContent> MatchWith<TID, TContent>(Func<IReadOnlyDictionary<string, TContent>, Pattern<TID, TContent>> func) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.MatchWith(func);
-
     public static IEnumerable<IEnumerable<(string Name, TContent Item)>> Find<TID, TContent>(this TContent data, Pattern<TID, TContent> pattern) where TContent : IMatchable<TID, TContent> =>
         new PatternEnumerable<TID, TContent>(data, pattern);
 
@@ -205,7 +187,7 @@ public static class Pattern {
 
                         if (e._nexts.Count > 0) {
                             var nextPathData = e._nexts[0];
-                            var nextPathPattern = Path<TID, TContent>(ps[1..]);
+                            var nextPathPattern = new Pattern<TID, TContent>.Path(ps.ToList()[1..].ToImmutableList());
 
                             foreach( var next in e._nexts[1..] ) {
                                 var w = Dup(_work);
@@ -221,7 +203,7 @@ public static class Pattern {
                             var captures = e.Current.ToList();
 
                             if (e._nexts.Count > 0) {
-                                var nextPathPattern = Path<TID, TContent>(ps[1..]);
+                                var nextPathPattern = new Pattern<TID, TContent>.Path(ps.ToList()[1..].ToImmutableList());
 
                                 foreach( var next in e._nexts ) {
                                     var w = Dup(altWork);

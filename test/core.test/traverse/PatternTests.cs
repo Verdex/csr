@@ -1,4 +1,6 @@
 
+using System.Collections.Immutable;
+
 using csr.core.traverse;
 
 namespace csr.test.core.traverse;
@@ -28,19 +30,19 @@ public class PatternTests {
         }
     }
 
-    private static Pattern<Type, Tree> Wild() => Pattern.Wild<Type, Tree>();
-    private static Pattern<Type, Tree> Exact(Type t, IEnumerable<Pattern<Type, Tree>> contents) => Pattern.Exact<Type, Tree>(t, contents);
-    private static Pattern<Type, Tree> Contents(IEnumerable<Pattern<Type, Tree>> contents) => Pattern.Contents<Type, Tree>(contents);
-    private static Pattern<Type, Tree> Kind(Type t) => Pattern.Kind<Type, Tree>(t);
-    private static Pattern<Type, Tree> And(Pattern<Type, Tree> a, Pattern<Type, Tree> b) => Pattern.And<Type, Tree>(a, b);
-    private static Pattern<Type, Tree> Or(Pattern<Type, Tree> a, Pattern<Type, Tree> b) => Pattern.Or<Type, Tree>(a, b);
-    private static Pattern<Type, Tree> Capture(string s) => Pattern.Capture<Type, Tree>(s);
-    private static Pattern<Type, Tree> TemplateVar(string s) => Pattern.TemplateVar<Type, Tree>(s);
-    private static Pattern<Type, Tree> SubContentPath(IEnumerable<Pattern<Type, Tree>> contents) => Pattern.SubContentPath<Type, Tree>(contents);
-    private static Pattern<Type, Tree> PathNext() => Pattern.PathNext<Type, Tree>();
-    private static Pattern<Type, Tree> Path(IEnumerable<Pattern<Type, Tree>> contents) => Pattern.Path<Type, Tree>(contents);
-    private static Pattern<Type, Tree> Predicate(Func<Tree, bool> predicate) => Pattern.Predicate<Type, Tree>(predicate);
-    private static Pattern<Type, Tree> MatchWith(Func<IReadOnlyDictionary<string, Tree>, Pattern<Type, Tree>> func) => Pattern.MatchWith<Type, Tree>(func);
+    private static Pattern<Type, Tree> Wild() => new Pattern<Type, Tree>.Wild();
+    private static Pattern<Type, Tree> Exact(Type t, ImmutableList<Pattern<Type, Tree>> contents) => new Pattern<Type, Tree>.Exact(t, contents);
+    private static Pattern<Type, Tree> Contents(ImmutableList<Pattern<Type, Tree>> contents) => new Pattern<Type, Tree>.Contents(contents);
+    private static Pattern<Type, Tree> Kind(Type t) => new Pattern<Type, Tree>.Kind(t);
+    private static Pattern<Type, Tree> And(Pattern<Type, Tree> a, Pattern<Type, Tree> b) => new Pattern<Type, Tree>.And(a, b);
+    private static Pattern<Type, Tree> Or(Pattern<Type, Tree> a, Pattern<Type, Tree> b) => new Pattern<Type, Tree>.Or(a, b);
+    private static Pattern<Type, Tree> Capture(string s) => new Pattern<Type, Tree>.Capture(s);
+    private static Pattern<Type, Tree> TemplateVar(string s) => new Pattern<Type, Tree>.TemplateVar(s);
+    private static Pattern<Type, Tree> SubContentPath(ImmutableList<Pattern<Type, Tree>> contents) => new Pattern<Type, Tree>.SubContentPath(contents);
+    private static Pattern<Type, Tree> PathNext() => new Pattern<Type, Tree>.PathNext();
+    private static Pattern<Type, Tree> Path(ImmutableList<Pattern<Type, Tree>> contents) => new Pattern<Type, Tree>.Path(contents);
+    private static Pattern<Type, Tree> Predicate(Func<Tree, bool> predicate) => new Pattern<Type, Tree>.Predicate(predicate);
+    private static Pattern<Type, Tree> MatchWith(Func<IReadOnlyDictionary<string, Tree>, Pattern<Type, Tree>> func) => new Pattern<Type, Tree>.MatchWith(func);
 
 
     [Test]
