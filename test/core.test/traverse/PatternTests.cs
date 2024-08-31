@@ -263,11 +263,11 @@ public class PatternTests {
     public void UsePathCapturesFromExactPatternInPath() { 
         var t = Node(Node(Node(Leaf(1), Leaf(4)), Node(Leaf(1), Leaf(5))), L(Leaf(1), Leaf(2), Leaf(3)));
         var output = F(t, Exact(typeof(Tree.Node), [ Path( [ Exact(typeof(Tree.Node), [PathNext(), PathNext()])
-                                                                       , Exact(typeof(Tree.Node), [Capture("a"), Capture("c")])
-                                                                       ]), 
+                                                           , Exact(typeof(Tree.Node), [Capture("a"), Capture("c")])
+                                                           ]), 
             Path([Exact(typeof(Tree.L), [TemplateVar("a"), PathNext(), PathNext()])
-                       , Capture("b")
-                       ])]));
+                 , Capture("b")
+                 ])]));
         A(output, [ [("a", Leaf(1)), ("c", Leaf(4)), ("b", Leaf(2))]
                   , [("a", Leaf(1)), ("c", Leaf(4)), ("b", Leaf(3))] 
                   , [("a", Leaf(1)), ("c", Leaf(5)), ("b", Leaf(2))] 
@@ -282,8 +282,8 @@ public class PatternTests {
                                                            , Exact(typeof(Tree.Node), [Capture("a"), Capture("c")])
                                                            ] ), 
             Path([Exact(typeof(Tree.L), [TemplateVar("a"), PathNext(), PathNext()])
-                       , Capture("b")
-                       ])]));
+                 , Capture("b")
+                 ])]));
         A(output, [ [("a", Leaf(1)), ("c", Leaf(4)), ("b", Leaf(2))]
                   , [("a", Leaf(1)), ("c", Leaf(4)), ("b", Leaf(3))] 
                   ]);
@@ -293,11 +293,11 @@ public class PatternTests {
     public void UsePathCapturesFromExactPatternInPathWithFailingSecondaryCaptures() { 
         var t = Node(Node(Node(Leaf(1), Leaf(4)), Node(Leaf(1), Leaf(5))), L(Leaf(0), Leaf(2), Leaf(3)));
         var output = F(t, Exact(typeof(Tree.Node), [ Path( [ Exact(typeof(Tree.Node), [PathNext(), PathNext()])
-                                                                       , Exact(typeof(Tree.Node), [Capture("a"), Capture("c")])
-                                                                       ]), 
+                                                           , Exact(typeof(Tree.Node), [Capture("a"), Capture("c")])
+                                                           ]), 
             Path([Exact(typeof(Tree.L), [TemplateVar("a"), PathNext(), PathNext()])
-                       , Capture("b")
-                       ])]));
+                 , Capture("b")
+                 ])]));
         A(output, []); 
     }
 
@@ -307,8 +307,8 @@ public class PatternTests {
         var t = Node(L(Leaf(1), Leaf(4), Leaf(1), Leaf(5)), L(Leaf(1), Leaf(2), Leaf(3)));
         var output = F(t, Exact(typeof(Tree.Node), [ SubContentPath( [ Capture("a"), Capture("c") ] ),
             Path([Exact(typeof(Tree.L), [TemplateVar("a"), PathNext(), PathNext()])
-                       , Capture("b")
-                       ])]));
+                 , Capture("b")
+                 ])]));
         A(output, [ [("a", Leaf(1)), ("c", Leaf(4)), ("b", Leaf(2))]
                   , [("a", Leaf(1)), ("c", Leaf(4)), ("b", Leaf(3))] 
                   , [("a", Leaf(1)), ("c", Leaf(5)), ("b", Leaf(2))] 
