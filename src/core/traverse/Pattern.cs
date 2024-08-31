@@ -187,7 +187,7 @@ public static class Pattern {
 
                         if (e._nexts.Count > 0) {
                             var nextPathData = e._nexts[0];
-                            var nextPathPattern = new Pattern<TID, TContent>.Path(ps.ToList()[1..].ToImmutableList());
+                            var nextPathPattern = new Pattern<TID, TContent>.Path(ps.Skip(1).ToImmutableList());
 
                             foreach( var next in e._nexts[1..] ) {
                                 var w = Dup(_work);
@@ -203,7 +203,7 @@ public static class Pattern {
                             var captures = e.Current.ToList();
 
                             if (e._nexts.Count > 0) {
-                                var nextPathPattern = new Pattern<TID, TContent>.Path(ps.ToList()[1..].ToImmutableList());
+                                var nextPathPattern = new Pattern<TID, TContent>.Path(ps.Skip(1).ToImmutableList());
 
                                 foreach( var next in e._nexts ) {
                                     var w = Dup(altWork);
