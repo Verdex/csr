@@ -113,9 +113,9 @@ public class PatternTests {
     public void FindWithPath() {
         var t = Node(Node(Leaf(1), Leaf(2)), Node(Leaf(3), Leaf(4)));
         var output = F(t, Path([ Contents([PathNext(), PathNext()])
-                                     , Contents([PathNext(), PathNext()])
-                                     , Capture("a")
-                                     ]));
+                               , Contents([PathNext(), PathNext()])
+                               , Capture("a")
+                               ]));
         A(output, [ [("a", Leaf(1))]
                   , [("a", Leaf(2))] 
                   , [("a", Leaf(3))] 
@@ -232,8 +232,8 @@ public class PatternTests {
     public void FindPathInSubContentPath() {
         var t = L([Node(Leaf(1), Leaf(2)), Leaf(3), Node(Leaf(4), Leaf(5)), Node(Leaf(5), Leaf(6)), Node(Leaf(6), Leaf(7))]);
         var output = F(t, SubContentPath([ Path([Exact(typeof(Tree.Node), [Wild(), Capture("a")])])
-                                               , Path([Exact(typeof(Tree.Node), [TemplateVar("a"), Capture("b")])])
-                                               ]));
+                                         , Path([Exact(typeof(Tree.Node), [TemplateVar("a"), Capture("b")])])
+                                         ]));
         A(output, [[("a", Leaf(5)), ("b", Leaf(6))], [("a", Leaf(6)), ("b", Leaf(7))]]);
     }
 
@@ -252,8 +252,8 @@ public class PatternTests {
         var t = Node(Leaf(1), L(Leaf(1), Leaf(2), Leaf(3)));
         var output = F(t, Exact(typeof(Tree.Node), [Capture("a"), 
             Path([Exact(typeof(Tree.L), [TemplateVar("a"), PathNext(), PathNext()])
-                       , Capture("b")
-                       ])]));
+                 , Capture("b")
+                 ])]));
         A(output, [ [("a", Leaf(1)), ("b", Leaf(2))]
                   , [("a", Leaf(1)), ("b", Leaf(3))] 
                   ]);
