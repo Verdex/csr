@@ -3,82 +3,82 @@ using System.Collections;
 
 namespace csr.core.traverse;
 
-public interface IMatchable<T> {
-    void Deconstruct(out Type id, out IEnumerable<T> contents);
+public interface IMatchable<TID, TContent> {
+    void Deconstruct(out TID id, out IEnumerable<TContent> contents);
 }
 
-public abstract record Pattern<T> where T : IMatchable<T> {
+public abstract record Pattern<TID, TContent> where TContent : IMatchable<TID, TContent> {
     private Pattern() { }
 
-    public record Wild : Pattern<T>;
+    public record Wild : Pattern<TID, TContent>;
 
-    public record Capture(string Name) : Pattern<T>;
-    public record TemplateVar(string Name) : Pattern<T>;
+    public record Capture(string Name) : Pattern<TID, TContent>;
+    public record TemplateVar(string Name) : Pattern<TID, TContent>;
 
-    public record Exact(Type Id, List<Pattern<T>> Cs) : Pattern<T>;
-    public record Contents(List<Pattern<T>> Cs) : Pattern<T>;
-    public record Kind(Type Id) : Pattern<T>;
+    public record Exact(TID Id, List<Pattern<TID, TContent>> Cs) : Pattern<TID, TContent>;
+    public record Contents(List<Pattern<TID, TContent>> Cs) : Pattern<TID, TContent>;
+    public record Kind(TID Id) : Pattern<TID, TContent>;
 
-    public record And(Pattern<T> Left, Pattern<T> Right) : Pattern<T>;
-    public record Or(Pattern<T> Left, Pattern<T> Right) : Pattern<T>;
+    public record And(Pattern<TID, TContent> Left, Pattern<TID, TContent> Right) : Pattern<TID, TContent>;
+    public record Or(Pattern<TID, TContent> Left, Pattern<TID, TContent> Right) : Pattern<TID, TContent>;
 
-    public record PathNext : Pattern<T>;
-    public record Path(List<Pattern<T>> Ps) : Pattern<T>;
-    public record SubContentPath(List<Pattern<T>> Ps) : Pattern<T>;
+    public record PathNext : Pattern<TID, TContent>;
+    public record Path(List<Pattern<TID, TContent>> Ps) : Pattern<TID, TContent>;
+    public record SubContentPath(List<Pattern<TID, TContent>> Ps) : Pattern<TID, TContent>;
 
-    public record Predicate(Func<T, bool> Pred) : Pattern<T>;
-    public record MatchWith(Func<IReadOnlyDictionary<string, T>, Pattern<T>> Func) : Pattern<T>;
+    public record Predicate(Func<TContent, bool> Pred) : Pattern<TID, TContent>;
+    public record MatchWith(Func<IReadOnlyDictionary<string, TContent>, Pattern<TID, TContent>> Func) : Pattern<TID, TContent>;
 }
 
 public static class Pattern {
-    public static Pattern<T> Wild<T>() where T : IMatchable<T> => new Pattern<T>.Wild();
+    public static Pattern<TID, TContent> Wild<TID, TContent>() where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.Wild();
 
-    public static Pattern<T> Capture<T>(string name) where T : IMatchable<T> => new Pattern<T>.Capture(name);
-    public static Pattern<T> TemplateVar<T>(string name) where T : IMatchable<T> => new Pattern<T>.TemplateVar(name);
+    public static Pattern<TID, TContent> Capture<TID, TContent>(string name) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.Capture(name);
+    public static Pattern<TID, TContent> TemplateVar<TID, TContent>(string name) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.TemplateVar(name);
 
-    public static Pattern<T> Exact<T>(Type id, IEnumerable<Pattern<T>> contents) where T : IMatchable<T> => new Pattern<T>.Exact(id, contents.ToList());
-    public static Pattern<T> Contents<T>(IEnumerable<Pattern<T>> contents) where T : IMatchable<T> => new Pattern<T>.Contents(contents.ToList());
-    public static Pattern<T> Kind<T>(Type id) where T : IMatchable<T> => new Pattern<T>.Kind(id);
+    public static Pattern<TID, TContent> Exact<TID, TContent>(TID id, IEnumerable<Pattern<TID, TContent>> contents) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.Exact(id, contents.ToList());
+    public static Pattern<TID, TContent> Contents<TID, TContent>(IEnumerable<Pattern<TID, TContent>> contents) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.Contents(contents.ToList());
+    public static Pattern<TID, TContent> Kind<TID, TContent>(TID id) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.Kind(id);
 
-    public static Pattern<T> And<T>(Pattern<T> left, Pattern<T> right) where T : IMatchable<T> => new Pattern<T>.And(left, right);
-    public static Pattern<T> Or<T>(Pattern<T> left, Pattern<T> right) where T : IMatchable<T> => new Pattern<T>.Or(left, right);
+    public static Pattern<TID, TContent> And<TID, TContent>(Pattern<TID, TContent> left, Pattern<TID, TContent> right) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.And(left, right);
+    public static Pattern<TID, TContent> Or<TID, TContent>(Pattern<TID, TContent> left, Pattern<TID, TContent> right) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.Or(left, right);
 
-    public static Pattern<T> PathNext<T>() where T : IMatchable<T> => new Pattern<T>.PathNext();
-    public static Pattern<T> Path<T>(IEnumerable<Pattern<T>> patterns) where T : IMatchable<T> => new Pattern<T>.Path(patterns.ToList());
-    public static Pattern<T> SubContentPath<T>(IEnumerable<Pattern<T>> patterns) where T : IMatchable<T> => new Pattern<T>.SubContentPath(patterns.ToList());
+    public static Pattern<TID, TContent> PathNext<TID, TContent>() where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.PathNext();
+    public static Pattern<TID, TContent> Path<TID, TContent>(IEnumerable<Pattern<TID, TContent>> patterns) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.Path(patterns.ToList());
+    public static Pattern<TID, TContent> SubContentPath<TID, TContent>(IEnumerable<Pattern<TID, TContent>> patterns) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.SubContentPath(patterns.ToList());
 
-    public static Pattern<T> Predicate<T>(Func<T, bool> predicate) where T : IMatchable<T> => new Pattern<T>.Predicate(predicate);
-    public static Pattern<T> MatchWith<T>(Func<IReadOnlyDictionary<string, T>, Pattern<T>> func) where T : IMatchable<T> => new Pattern<T>.MatchWith(func);
+    public static Pattern<TID, TContent> Predicate<TID, TContent>(Func<TContent, bool> predicate) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.Predicate(predicate);
+    public static Pattern<TID, TContent> MatchWith<TID, TContent>(Func<IReadOnlyDictionary<string, TContent>, Pattern<TID, TContent>> func) where TContent : IMatchable<TID, TContent> => new Pattern<TID, TContent>.MatchWith(func);
 
-    public static IEnumerable<IEnumerable<(string Name, T Item)>> Find<T>(this T data, Pattern<T> pattern) where T : IMatchable<T> =>
-        new PatternEnumerable<T>(data, pattern);
+    public static IEnumerable<IEnumerable<(string Name, TContent Item)>> Find<TID, TContent>(this TContent data, Pattern<TID, TContent> pattern) where TContent : IMatchable<TID, TContent> =>
+        new PatternEnumerable<TID, TContent>(data, pattern);
 
-    public static IEnumerable<IDictionary<string, T>> FindDict<T>(this T data, Pattern<T> pattern) where T : IMatchable<T> =>
+    public static IEnumerable<IDictionary<string, TContent>> FindDict<TID, TContent>(this TContent data, Pattern<TID, TContent> pattern) where TContent : IMatchable<TID, TContent> =>
         data.Find(pattern).Select(x => x.ToDictionary(k => k.Name, v => v.Item));
 
-    public class PatternEnumerable<T>(T data, Pattern<T> pattern) : IEnumerable<IEnumerable<(string Name, T Item)>> where T : IMatchable<T> {
-        private PatternEnumerator<T> Enumerator() => new PatternEnumerator<T>(data, pattern);
-        public IEnumerator<IEnumerable<(string Name, T Item)>> GetEnumerator() => Enumerator();
+    public class PatternEnumerable<TID, TContent>(TContent data, Pattern<TID, TContent> pattern) : IEnumerable<IEnumerable<(string Name, TContent Item)>> where TContent : IMatchable<TID, TContent> {
+        private PatternEnumerator<TID, TContent> Enumerator() => new PatternEnumerator<TID, TContent>(data, pattern);
+        public IEnumerator<IEnumerable<(string Name, TContent Item)>> GetEnumerator() => Enumerator();
         IEnumerator IEnumerable.GetEnumerator() => Enumerator();
     }
 
-    public class PatternEnumerator<T> : IEnumerator<IEnumerable<(string Name, T Item)>> where T : IMatchable<T> {
+    public class PatternEnumerator<TID, TContent> : IEnumerator<IEnumerable<(string Name, TContent Item)>> where TContent : IMatchable<TID, TContent> {
 
-        private readonly T _data;
-        private readonly Pattern<T> _pattern;
+        private readonly TContent _data;
+        private readonly Pattern<TID, TContent> _pattern;
 
-        private Stack<(T, Pattern<T>)> _work = new();
-        private List<(string, T)> _captures = new();
-        private List<T> _nexts = new();
-        private Stack<(List<(string, T)> Captures, Stack<(T, Pattern<T>)> Work, List<T> Nexts)> _alternatives = new();
+        private Stack<(TContent, Pattern<TID, TContent>)> _work = new();
+        private List<(string, TContent)> _captures = new();
+        private List<TContent> _nexts = new();
+        private Stack<(List<(string, TContent)> Captures, Stack<(TContent, Pattern<TID, TContent>)> Work, List<TContent> Nexts)> _alternatives = new();
 
-        public PatternEnumerator(T data, Pattern<T> pattern) {
+        public PatternEnumerator(TContent data, Pattern<TID, TContent> pattern) {
             _work.Push((data, pattern));
             _data = data;
             _pattern = pattern;
         }
 
-        public IEnumerable<(string Name, T Item)> Current => _captures;
+        public IEnumerable<(string Name, TContent Item)> Current => _captures;
 
         public bool MoveNext() {
             if (_work.Count == 0 && _alternatives.Count == 0) {
@@ -92,13 +92,13 @@ public static class Pattern {
             while (_work.Count != 0) {
                 var (data, pattern) = _work.Pop();
                 switch (pattern) {
-                    case Pattern<T>.Wild: break;
+                    case Pattern<TID, TContent>.Wild: break;
 
-                    case Pattern<T>.Capture c:
+                    case Pattern<TID, TContent>.Capture c:
                         _captures.Add((c.Name, data));
                         break;
 
-                    case Pattern<T>.TemplateVar t: {
+                    case Pattern<TID, TContent>.TemplateVar t: {
                         var (_, item) = _captures.Find(c => c.Item1.Equals(t.Name));
                         if (item is null || !item.Equals(data)){
                             // Note:  If the item is null then we've been given an non-existent variable name.
@@ -113,10 +113,10 @@ public static class Pattern {
                         break;
                     }
 
-                    case Pattern<T>.Exact e: {
+                    case Pattern<TID, TContent>.Exact e: {
                         var (id, cs) = data;
                         var dataContents = cs.ToList();
-                        if (id == e.Id && e.Cs.Count == dataContents.Count) {
+                        if (object.Equals(id, e.Id) && e.Cs.Count == dataContents.Count) {
                             foreach( var w in dataContents.Zip(e.Cs).Reverse() ) {
                                 _work.Push(w);
                             }
@@ -130,7 +130,7 @@ public static class Pattern {
                         break;
                     }
 
-                    case Pattern<T>.Contents c: {
+                    case Pattern<TID, TContent>.Contents c: {
                         var (_, cs) = data;
                         var dataContents = cs.ToList();
                         if (dataContents.Count == c.Cs.Count) {
@@ -147,9 +147,9 @@ public static class Pattern {
                         break;
                     }
 
-                    case Pattern<T>.Kind k: {
+                    case Pattern<TID, TContent>.Kind k: {
                         var (id, _) = data;
-                        if (id != k.Id) {
+                        if (!object.Equals(id, k.Id)) {
                             if (_alternatives.Count > 0) {
                                 SwitchToAlternative();
                             }
@@ -160,12 +160,12 @@ public static class Pattern {
                         break;
                     }
 
-                    case Pattern<T>.And a:
+                    case Pattern<TID, TContent>.And a:
                         _work.Push((data, a.Right));
                         _work.Push((data, a.Left));
                         break;
 
-                    case Pattern<T>.Or o: {
+                    case Pattern<TID, TContent>.Or o: {
                         var w = Dup(_work);
                         w.Push((data, o.Right));
                         AddAlternative(w);
@@ -173,15 +173,15 @@ public static class Pattern {
                         break;
                     }
 
-                    case Pattern<T>.PathNext:
+                    case Pattern<TID, TContent>.PathNext:
                         _nexts.Add(data);
                         break;
 
-                    case Pattern<T>.Path(var ps) when ps.Count == 0: break;
-                    case Pattern<T>.Path(var ps): {
+                    case Pattern<TID, TContent>.Path(var ps) when ps.Count == 0: break;
+                    case Pattern<TID, TContent>.Path(var ps): {
                         // Note:  Current work cloned off for alternatives
                         var altWork = Dup(_work);
-                        var e = (PatternEnumerator<T>)data.Find(ps[0]).GetEnumerator();
+                        var e = (PatternEnumerator<TID, TContent>)data.Find(ps[0]).GetEnumerator();
 
                         // Note:  Inject existing _captures into e's _captures so that
                         // template variables work inside of the inner Find.
@@ -205,7 +205,7 @@ public static class Pattern {
 
                         if (e._nexts.Count > 0) {
                             var nextPathData = e._nexts[0];
-                            var nextPathPattern = Path<T>(ps[1..]);
+                            var nextPathPattern = Path<TID, TContent>(ps[1..]);
 
                             foreach( var next in e._nexts[1..] ) {
                                 var w = Dup(_work);
@@ -221,7 +221,7 @@ public static class Pattern {
                             var captures = e.Current.ToList();
 
                             if (e._nexts.Count > 0) {
-                                var nextPathPattern = Path<T>(ps[1..]);
+                                var nextPathPattern = Path<TID, TContent>(ps[1..]);
 
                                 foreach( var next in e._nexts ) {
                                     var w = Dup(altWork);
@@ -238,7 +238,7 @@ public static class Pattern {
                         break;
                     }
 
-                    case Pattern<T>.SubContentPath(var ps): {
+                    case Pattern<TID, TContent>.SubContentPath(var ps): {
                         var (_, cs) = data;
                         var dataContents = cs.ToList();
                         if (ps.Count <= dataContents.Count) {
@@ -273,7 +273,7 @@ public static class Pattern {
                         break;
                     }
 
-                    case Pattern<T>.Predicate(var p): {
+                    case Pattern<TID, TContent>.Predicate(var p): {
                         if (!p(data)) {
                             if (_alternatives.Count > 0) {
                                 SwitchToAlternative();
@@ -285,7 +285,7 @@ public static class Pattern {
                         break;
                     }
 
-                    case Pattern<T>.MatchWith(var f): {
+                    case Pattern<TID, TContent>.MatchWith(var f): {
                         var p = f(_captures.ToDictionary(c => c.Item1, c => c.Item2));
                         _work.Push((data, p));
                         break;
@@ -317,7 +317,7 @@ public static class Pattern {
 
         public void Dispose() { }
 
-        private void AddAlternative(Stack<(T, Pattern<T>)> work, List<(String, T)>? captures = null, List<T>? nexts = null) {
+        private void AddAlternative(Stack<(TContent, Pattern<TID, TContent>)> work, List<(String, TContent)>? captures = null, List<TContent>? nexts = null) {
             var c = captures ?? Dup(_captures);
             var n = nexts ?? Dup(_nexts);
             _alternatives.Push((c, work, n));
