@@ -1,13 +1,12 @@
 
 using csr.core.traverse;
-using static csr.core.traverse.Pattern;
 
 namespace csr.test.core.traverse;
 
 [TestFixture]
 public class PatternTests {
 
-    private static List<List<(string Name, Tree Item)>> F(Tree d, Pattern<Tree> p) => d.Find<Tree>(p).Select(x => x.ToList()).ToList();
+    private static List<List<(string Name, Tree Item)>> F(Tree d, Pattern<Type, Tree> p) => d.Find<Type, Tree>(p).Select(x => x.ToList()).ToList();
     private static void A(List<List<(string Name, Tree Item)>> output, List<List<(string Name, Tree Item)>> expected) {
         Assert.Multiple(() => {
             Assert.That(output.Count, Is.EqualTo(expected.Count));
@@ -29,66 +28,81 @@ public class PatternTests {
         }
     }
 
+    private static Pattern<Type, Tree> Wild() => Pattern.Wild<Type, Tree>();
+    private static Pattern<Type, Tree> Exact(Type t, IEnumerable<Pattern<Type, Tree>> contents) => Pattern.Exact<Type, Tree>(t, contents);
+    private static Pattern<Type, Tree> Contents(IEnumerable<Pattern<Type, Tree>> contents) => Pattern.Contents<Type, Tree>(contents);
+    private static Pattern<Type, Tree> Kind(Type t) => Pattern.Kind<Type, Tree>(t);
+    private static Pattern<Type, Tree> And(Pattern<Type, Tree> a, Pattern<Type, Tree> b) => Pattern.And<Type, Tree>(a, b);
+    private static Pattern<Type, Tree> Or(Pattern<Type, Tree> a, Pattern<Type, Tree> b) => Pattern.Or<Type, Tree>(a, b);
+    private static Pattern<Type, Tree> Capture(string s) => Pattern.Capture<Type, Tree>(s);
+    private static Pattern<Type, Tree> TemplateVar(string s) => Pattern.TemplateVar<Type, Tree>(s);
+    private static Pattern<Type, Tree> SubContentPath(IEnumerable<Pattern<Type, Tree>> contents) => Pattern.SubContentPath<Type, Tree>(contents);
+    private static Pattern<Type, Tree> PathNext() => Pattern.PathNext<Type, Tree>();
+    private static Pattern<Type, Tree> Path(IEnumerable<Pattern<Type, Tree>> contents) => Pattern.Path<Type, Tree>(contents);
+    private static Pattern<Type, Tree> Predicate(Func<Tree, bool> predicate) => Pattern.Predicate<Type, Tree>(predicate);
+    private static Pattern<Type, Tree> MatchWith(Func<IReadOnlyDictionary<string, Tree>, Pattern<Type, Tree>> func) => Pattern.MatchWith<Type, Tree>(func);
+
+
     [Test]
     public void FindWithWild() { 
         var t = Leaf(7);
-        var output = F(t, Wild<Tree>());
+        var output = F(t, Wild());
         A(output, [[]]);
     }
 
     [Test]
     public void FindWithExactTemplateVar() {
         var t = Node(Leaf(0), Leaf(0));
-        var output = F(t, Exact<Tree>(typeof(Tree.Node), [Capture<Tree>("a"), TemplateVar<Tree>("a")]));
+        var output = F(t, Exact(typeof(Tree.Node), [Capture("a"), TemplateVar("a")]));
         A(output, [[("a", Leaf(0))]]);
     }
 
     [Test]
     public void FindWithContentsTemplateVar() {
         var t = Node(Leaf(0), Leaf(0));
-        var output = F(t, Contents<Tree>([Capture<Tree>("a"), TemplateVar<Tree>("a")]));
+        var output = F(t, Contents([Capture("a"), TemplateVar("a")]));
         A(output, [[("a", Leaf(0))]]);
     }
 
     [Test]
     public void FindWithKind() {
         var t = Node(Leaf(0), Leaf(0));
-        var output = F(t, Kind<Tree>(typeof(Tree.Node)));
+        var output = F(t, Kind(typeof(Tree.Node)));
         A(output, [[]]);
     }
 
     [Test]
     public void FindWithPredicate() { 
         var t = Leaf(77);
-        var output = F(t, Predicate<Tree>(x => x is Tree.Leaf(Value: 77)));
+        var output = F(t, Predicate(x => x is Tree.Leaf(Value: 77)));
         A(output, [[]]);
     }
 
     [Test]
     public void FindWithAnd() {
         var t = Leaf(77);
-        var output = F(t, And<Tree>(Predicate<Tree>(x => x is Tree.Leaf(Value: 77)), Capture<Tree>("x")));
+        var output = F(t, And(Predicate(x => x is Tree.Leaf(Value: 77)), Capture("x")));
         A(output, [[("x", Leaf(77))]]);
     }
 
     [Test]
     public void FindWithOr() {
         var t = Leaf(15);
-        var output = F(t, Or<Tree>(Wild<Tree>(), Wild<Tree>()));
+        var output = F(t, Or(Wild(), Wild()));
         A(output, [[], []]);
     }
 
     [Test]
     public void FindWithMatchWith() {
         var t = Leaf(77);
-        var output = F(t, MatchWith<Tree>( _ => Wild<Tree>()));
+        var output = F(t, MatchWith( _ => Wild()));
         A(output, [[]]);
     }
 
     [Test]
     public void FindWithSubContentPath() {
         var t = L(Leaf(1), Leaf(2), Leaf(3), Leaf(4));
-        var output = F(t, SubContentPath<Tree>([Capture<Tree>("a"), Capture<Tree>("b")]));
+        var output = F(t, SubContentPath([Capture("a"), Capture("b")]));
         A(output, [ [("a", Leaf(1)), ("b", Leaf(2))]
                   , [("a", Leaf(2)), ("b", Leaf(3))]
                   , [("a", Leaf(3)), ("b", Leaf(4))]
@@ -98,9 +112,9 @@ public class PatternTests {
     [Test]
     public void FindWithPath() {
         var t = Node(Node(Leaf(1), Leaf(2)), Node(Leaf(3), Leaf(4)));
-        var output = F(t, Path<Tree>([ Contents<Tree>([PathNext<Tree>(), PathNext<Tree>()])
-                                     , Contents<Tree>([PathNext<Tree>(), PathNext<Tree>()])
-                                     , Capture<Tree>("a")
+        var output = F(t, Path([ Contents([PathNext(), PathNext()])
+                                     , Contents([PathNext(), PathNext()])
+                                     , Capture("a")
                                      ]));
         A(output, [ [("a", Leaf(1))]
                   , [("a", Leaf(2))] 
@@ -112,113 +126,113 @@ public class PatternTests {
     [Test]
     public void FailTemplateWithUnknownName() {
         var t = Leaf(1);
-        var output = F(t, TemplateVar<Tree>("x"));
+        var output = F(t, TemplateVar("x"));
         A(output, []);
     }
 
     [Test]
     public void FailTemplateWithNonMatchingValue() {
         var t = Node(Leaf(1), Leaf(2));
-        var output = F(t, Contents<Tree>([Capture<Tree>("x"), TemplateVar<Tree>("x")]));
+        var output = F(t, Contents([Capture("x"), TemplateVar("x")]));
         A(output, []);
     }
 
     [Test]
     public void FindCaptureWithFirstOr() {
         var t = Leaf(1);
-        var output = F(t, Or<Tree>(Capture<Tree>("a"), Exact<Tree>(typeof(int), [])));
+        var output = F(t, Or(Capture("a"), Exact(typeof(int), [])));
         A(output, [[("a", Leaf(1))]]);
     }
 
     [Test]
     public void FindCaptureWithSecondOr() {
         var t = Leaf(1);
-        var output = F(t, Or<Tree>(Exact<Tree>(typeof(int), []), Capture<Tree>("a")));
+        var output = F(t, Or(Exact(typeof(int), []), Capture("a")));
         A(output, [[("a", Leaf(1))]]);
     }
 
     [Test]
     public void FindCaptureWithBothOr() {
         var t = Leaf(1);
-        var output = F(t, Or<Tree>(Capture<Tree>("a"), Capture<Tree>("a")));
+        var output = F(t, Or(Capture("a"), Capture("a")));
         A(output, [[("a", Leaf(1))], [("a", Leaf(1))]]);
     }
 
     [Test]
     public void FailOr() {
         var t = Leaf(1);
-        var output = F(t, Or<Tree>(Kind<Tree>(typeof(int)), Kind<Tree>(typeof(int))));
+        var output = F(t, Or(Kind(typeof(int)), Kind(typeof(int))));
         A(output, []);
     }
 
     [Test]
     public void FailAndLeft() {
         var t = Leaf(1);
-        var output = F(t, And<Tree>(Kind<Tree>(typeof(int)), Wild<Tree>()));
+        var output = F(t, And(Kind(typeof(int)), Wild()));
         A(output, []);
     }
 
     [Test]
     public void FailAndRight() {
         var t = Leaf(1);
-        var output = F(t, And<Tree>(Wild<Tree>(), Kind<Tree>(typeof(int))));
+        var output = F(t, And(Wild(), Kind(typeof(int))));
         A(output, []);
     }
 
     [Test]
     public void FailAndBoth() {
         var t = Leaf(1);
-        var output = F(t, And<Tree>(Kind<Tree>(typeof(int)), Kind<Tree>(typeof(int))));
+        var output = F(t, And(Kind(typeof(int)), Kind(typeof(int))));
         A(output, []);
     }
 
     [Test]
     public void FailContentsForLength() {
         var t = Node(Leaf(1), Leaf(1));
-        var output = F(t, Contents<Tree>([Wild<Tree>()]));
+        var output = F(t, Contents([Wild()]));
         A(output, []);
     }
 
     [Test]
     public void FailExactForLength() {
         var t = Node(Leaf(1), Leaf(1));
-        var output = F(t, Exact<Tree>(typeof(Tree.Node), [Wild<Tree>()]));
+        var output = F(t, Exact(typeof(Tree.Node), [Wild()]));
         A(output, []);
     }
 
     [Test]
     public void FailExactForType() {
         var t = Node(Leaf(1), Leaf(1));
-        var output = F(t, Exact<Tree>(typeof(int), [Wild<Tree>(), Wild<Tree>()]));
+        var output = F(t, Exact(typeof(int), [Wild(), Wild()]));
         A(output, []);
     }
 
     [Test]
     public void FailPredicate() {
         var t = Leaf(1);
-        var output = F(t, Predicate<Tree>(_ => false));
+        var output = F(t, Predicate(_ => false));
         A(output, []);
     }
 
     [Test]
     public void FailMatchWith() {
         var t = Leaf(1);
-        var output = F(t, MatchWith<Tree>(_ => Predicate<Tree>(_ => false)));
+        var output = F(t, MatchWith(_ => Predicate(_ => false)));
         A(output, []);
     }
 
     [Test]
     public void FindSubContentPathInPath() {
         var t = L([Leaf(1), Leaf(1), Leaf(2), Leaf(2), Leaf(3), Leaf(3)]);
-        var output = F(t, Path<Tree>([SubContentPath<Tree>([Capture<Tree>("a"), PathNext<Tree>()]), TemplateVar<Tree>("a")]));
+        var output = F(t, Path([SubContentPath([Capture("a"), PathNext()]), TemplateVar("a")]));
         A(output, [[("a", Leaf(1))], [("a", Leaf(3))], [("a", Leaf(2))]]);
     }
 
     [Test]
     public void FindPathInSubContentPath() {
         var t = L([Node(Leaf(1), Leaf(2)), Leaf(3), Node(Leaf(4), Leaf(5)), Node(Leaf(5), Leaf(6)), Node(Leaf(6), Leaf(7))]);
-        var output = F(t, SubContentPath<Tree>([ Path<Tree>([Exact<Tree>(typeof(Tree.Node), [Wild<Tree>(), Capture<Tree>("a")])])
-                                               , Path<Tree>([Exact<Tree>(typeof(Tree.Node), [TemplateVar<Tree>("a"), Capture<Tree>("b")])])
+        var output = F(t, SubContentPath([ Path([Exact(typeof(Tree.Node), [Wild(), Capture("a")])])
+                                               , Path([Exact(typeof(Tree.Node), [TemplateVar("a"), Capture("b")])])
                                                ]));
         A(output, [[("a", Leaf(5)), ("b", Leaf(6))], [("a", Leaf(6)), ("b", Leaf(7))]]);
     }
@@ -226,7 +240,7 @@ public class PatternTests {
     [Test]
     public void FindSubContentPathWithThreeCaptures() {
         var t = L([Leaf(1), Leaf(2), Leaf(3), Leaf(4), Leaf(5)]);
-        var output = F(t, SubContentPath<Tree>([ Capture<Tree>("a"), Capture<Tree>("b"), Capture<Tree>("c") ]));
+        var output = F(t, SubContentPath([ Capture("a"), Capture("b"), Capture("c") ]));
         A(output, [ [ ("a", Leaf(1)), ("b", Leaf(2)), ("c", Leaf(3)) ]
                   , [ ("a", Leaf(2)), ("b", Leaf(3)), ("c", Leaf(4)) ]
                   , [ ("a", Leaf(3)), ("b", Leaf(4)), ("c", Leaf(5)) ]
@@ -236,9 +250,9 @@ public class PatternTests {
     [Test]
     public void UseCaptureFromExactPatternInPath() {
         var t = Node(Leaf(1), L(Leaf(1), Leaf(2), Leaf(3)));
-        var output = F(t, Exact<Tree>(typeof(Tree.Node), [Capture<Tree>("a"), 
-            Path<Tree>([Exact<Tree>(typeof(Tree.L), [TemplateVar<Tree>("a"), PathNext<Tree>(), PathNext<Tree>()])
-                       , Capture<Tree>("b")
+        var output = F(t, Exact(typeof(Tree.Node), [Capture("a"), 
+            Path([Exact(typeof(Tree.L), [TemplateVar("a"), PathNext(), PathNext()])
+                       , Capture("b")
                        ])]));
         A(output, [ [("a", Leaf(1)), ("b", Leaf(2))]
                   , [("a", Leaf(1)), ("b", Leaf(3))] 
@@ -248,11 +262,11 @@ public class PatternTests {
     [Test]
     public void UsePathCapturesFromExactPatternInPath() { 
         var t = Node(Node(Node(Leaf(1), Leaf(4)), Node(Leaf(1), Leaf(5))), L(Leaf(1), Leaf(2), Leaf(3)));
-        var output = F(t, Exact<Tree>(typeof(Tree.Node), [ Path<Tree>( [ Exact<Tree>(typeof(Tree.Node), [PathNext<Tree>(), PathNext<Tree>()])
-                                                                       , Exact<Tree>(typeof(Tree.Node), [Capture<Tree>("a"), Capture<Tree>("c")])
+        var output = F(t, Exact(typeof(Tree.Node), [ Path( [ Exact(typeof(Tree.Node), [PathNext(), PathNext()])
+                                                                       , Exact(typeof(Tree.Node), [Capture("a"), Capture("c")])
                                                                        ]), 
-            Path<Tree>([Exact<Tree>(typeof(Tree.L), [TemplateVar<Tree>("a"), PathNext<Tree>(), PathNext<Tree>()])
-                       , Capture<Tree>("b")
+            Path([Exact(typeof(Tree.L), [TemplateVar("a"), PathNext(), PathNext()])
+                       , Capture("b")
                        ])]));
         A(output, [ [("a", Leaf(1)), ("c", Leaf(4)), ("b", Leaf(2))]
                   , [("a", Leaf(1)), ("c", Leaf(4)), ("b", Leaf(3))] 
@@ -264,11 +278,11 @@ public class PatternTests {
     [Test]
     public void UsePathCapturesFromExactPatternInPathWithFailingInitialCaptures() { 
         var t = Node(Node(Node(Leaf(1), Leaf(4)), Node(Leaf(2), Leaf(5))), L(Leaf(1), Leaf(2), Leaf(3)));
-        var output = F(t, Exact<Tree>(typeof(Tree.Node), [ Path<Tree>( [ Exact<Tree>(typeof(Tree.Node), [PathNext<Tree>(), PathNext<Tree>()])
-                                                                       , Exact<Tree>(typeof(Tree.Node), [Capture<Tree>("a"), Capture<Tree>("c")])
-                                                                       ]), 
-            Path<Tree>([Exact<Tree>(typeof(Tree.L), [TemplateVar<Tree>("a"), PathNext<Tree>(), PathNext<Tree>()])
-                       , Capture<Tree>("b")
+        var output = F(t, Exact(typeof(Tree.Node), [ Path( [ Exact(typeof(Tree.Node), [PathNext(), PathNext()])
+                                                           , Exact(typeof(Tree.Node), [Capture("a"), Capture("c")])
+                                                           ] ), 
+            Path([Exact(typeof(Tree.L), [TemplateVar("a"), PathNext(), PathNext()])
+                       , Capture("b")
                        ])]));
         A(output, [ [("a", Leaf(1)), ("c", Leaf(4)), ("b", Leaf(2))]
                   , [("a", Leaf(1)), ("c", Leaf(4)), ("b", Leaf(3))] 
@@ -278,11 +292,11 @@ public class PatternTests {
     [Test]
     public void UsePathCapturesFromExactPatternInPathWithFailingSecondaryCaptures() { 
         var t = Node(Node(Node(Leaf(1), Leaf(4)), Node(Leaf(1), Leaf(5))), L(Leaf(0), Leaf(2), Leaf(3)));
-        var output = F(t, Exact<Tree>(typeof(Tree.Node), [ Path<Tree>( [ Exact<Tree>(typeof(Tree.Node), [PathNext<Tree>(), PathNext<Tree>()])
-                                                                       , Exact<Tree>(typeof(Tree.Node), [Capture<Tree>("a"), Capture<Tree>("c")])
+        var output = F(t, Exact(typeof(Tree.Node), [ Path( [ Exact(typeof(Tree.Node), [PathNext(), PathNext()])
+                                                                       , Exact(typeof(Tree.Node), [Capture("a"), Capture("c")])
                                                                        ]), 
-            Path<Tree>([Exact<Tree>(typeof(Tree.L), [TemplateVar<Tree>("a"), PathNext<Tree>(), PathNext<Tree>()])
-                       , Capture<Tree>("b")
+            Path([Exact(typeof(Tree.L), [TemplateVar("a"), PathNext(), PathNext()])
+                       , Capture("b")
                        ])]));
         A(output, []); 
     }
@@ -291,9 +305,9 @@ public class PatternTests {
     [Test]
     public void UseSubContentPathCapturesFromExactPatternInPath() { 
         var t = Node(L(Leaf(1), Leaf(4), Leaf(1), Leaf(5)), L(Leaf(1), Leaf(2), Leaf(3)));
-        var output = F(t, Exact<Tree>(typeof(Tree.Node), [ SubContentPath<Tree>( [ Capture<Tree>("a"), Capture<Tree>("c") ] ),
-            Path<Tree>([Exact<Tree>(typeof(Tree.L), [TemplateVar<Tree>("a"), PathNext<Tree>(), PathNext<Tree>()])
-                       , Capture<Tree>("b")
+        var output = F(t, Exact(typeof(Tree.Node), [ SubContentPath( [ Capture("a"), Capture("c") ] ),
+            Path([Exact(typeof(Tree.L), [TemplateVar("a"), PathNext(), PathNext()])
+                       , Capture("b")
                        ])]));
         A(output, [ [("a", Leaf(1)), ("c", Leaf(4)), ("b", Leaf(2))]
                   , [("a", Leaf(1)), ("c", Leaf(4)), ("b", Leaf(3))] 
@@ -305,8 +319,8 @@ public class PatternTests {
     [Test]
     public void UseSubContentPathCapturesFromExactPatternInSubContentPath() {
         var t = Node(L(Leaf(1), Leaf(4), Leaf(2), Leaf(5)), L(Leaf(1), Leaf(2), Leaf(3)));
-        var output = F(t, Exact<Tree>(typeof(Tree.Node), [ SubContentPath<Tree>( [ Capture<Tree>("a"), Capture<Tree>("c") ] ),
-            SubContentPath<Tree>([TemplateVar<Tree>("a"), Capture<Tree>("b")])]));
+        var output = F(t, Exact(typeof(Tree.Node), [ SubContentPath( [ Capture("a"), Capture("c") ] ),
+            SubContentPath([TemplateVar("a"), Capture("b")])]));
         A(output, [ [("a", Leaf(1)), ("c", Leaf(4)), ("b", Leaf(2))]
                   , [("a", Leaf(2)), ("c", Leaf(5)), ("b", Leaf(3))] 
                   ]);
@@ -315,53 +329,53 @@ public class PatternTests {
     [Test]
     public void SubContentPathShouldFailForShortData() {
         var t = Node(Leaf(1), Leaf(2));
-        var output = F(t, SubContentPath<Tree>([Wild<Tree>(), Wild<Tree>(), Wild<Tree>()]));
+        var output = F(t, SubContentPath([Wild(), Wild(), Wild()]));
         A(output, []);
     }
 
     [Test]
     public void SubContentPathShouldFailForShortDataInAlternative() {
         var t = Node(Leaf(1), Leaf(2));
-        var output = F(t, Or<Tree>(SubContentPath<Tree>([Wild<Tree>(), Wild<Tree>(), Wild<Tree>()]), Capture<Tree>("a")));
+        var output = F(t, Or(SubContentPath([Wild(), Wild(), Wild()]), Capture("a")));
         A(output, [[("a", Node(Leaf(1), Leaf(2)))]]);
     }
 
     [Test]
     public void ContentShouldFailForUnequalDataInAlternative() {
         var t = Node(Leaf(1), Leaf(2));
-        var output = F(t, Or<Tree>(Contents<Tree>([Capture<Tree>("a")]), Contents<Tree>([Capture<Tree>("b"), Capture<Tree>("c")])));
+        var output = F(t, Or(Contents([Capture("a")]), Contents([Capture("b"), Capture("c")])));
         A(output, [[("b", Leaf(1)), ("c", Leaf(2))]]);
     }
 
     [Test]
     public void PredicateShouldFailInAlternative() {
         var t = Node(Leaf(1), Leaf(2));
-        var output = F(t, Or<Tree>(Predicate<Tree>(_ => false), Capture<Tree>("a")));
+        var output = F(t, Or(Predicate(_ => false), Capture("a")));
         A(output, [[("a", Node(Leaf(1), Leaf(2)))]]);
     }
 
     [Test]
     public void FindZeroLengthPath() {
         var t = Leaf(1);
-        var output = F(t, Path<Tree>([]));
+        var output = F(t, Path([]));
         A(output, [[]]);
     }
 
     [Test]
     public void FindMatchWithInSubContentPath() {
-        static Pattern<Tree> With(IReadOnlyDictionary<String, Tree> dict) {
+        static Pattern<Type, Tree> With(IReadOnlyDictionary<String, Tree> dict) {
             if (dict["a"] is Tree.Leaf(var x)) {
-                return Predicate<Tree>(v => {
+                return Predicate(v => {
                     if (v is Tree.Leaf(var y)) {
                         return y == x + 1;
                     }
                     return false;
                 });
             }
-            return Wild<Tree>();
+            return Wild();
         }
         var t = L(Leaf(1), Leaf(2), Leaf(3), Leaf(4), Leaf(7));
-        var output = F(t, SubContentPath<Tree>([Capture<Tree>("a"), MatchWith<Tree>(With)]));
+        var output = F(t, SubContentPath([Capture("a"), MatchWith(With)]));
         A(output, [[("a", Leaf(1))], [("a", Leaf(2))], [("a", Leaf(3))]]);
     }
 
@@ -369,7 +383,7 @@ public class PatternTests {
     private static Tree Node(Tree left, Tree right) => new Tree.Node(left, right);
     private static Tree L(params Tree[] xs) => new Tree.L(xs.ToList());
 
-    private abstract record Tree : IMatchable<Tree> {
+    private abstract record Tree : IMatchable<Type, Tree> {
         private Tree() { }
 
         public record Leaf(byte Value) : Tree;
