@@ -7,7 +7,8 @@ using csr.core.traverse;
 
 namespace csr.core.code;
 
-public abstract record CSharpAst : IMatchable<CSharpAst> {
+
+public abstract record CSharpAst : IMatchable<Type, CSharpAst> {
     private CSharpAst() { }
 
     public void Deconstruct(out Type id, out IEnumerable<CSharpAst> contents) {
