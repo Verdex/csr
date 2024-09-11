@@ -18,7 +18,6 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst> {
     }
 
     public sealed record Symbol(string Value) : CSharpAst;
-    public sealed record SyntaxList(ImmutableList<CSharpAst> Contents) : CSharpAst;
 
     // TODO for class: generics, initial constructor, base/interfaces, type constraints,
     //  nested top level, field, property, events, method
