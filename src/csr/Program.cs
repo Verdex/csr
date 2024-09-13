@@ -1,5 +1,6 @@
 ﻿
 using csr.core.code;
+using csr.core.traverse;
 
 namespace csr;
 
@@ -11,13 +12,15 @@ public static class Program {
         var csFiles = Directory.GetDirectories(currentDirectory, "", SearchOption.AllDirectories)
             .Where(d => new [] {"Debug", "Release", "bin", "obj", ".git"}.All(target => !IgnoreDir(d, target)))
             .SelectMany(d => Directory.GetFiles(d))
-            .Where(f => f.EndsWith(".cs"));
+            .Where(f => f.EndsWith(".cs"))
+            .Select(File.ReadAllText)
+            .SelectMany(CSharp.Parse);
 
-        var x = File.ReadAllText(csFiles.First());
-
-        var w = CSharp.Parse(x).ToList();
-        foreach(var ww in w) {
-            Console.WriteLine(ww);
+        foreach(var ww in csFiles) {
+            foreach( var x in ww.ToSeq()) {
+                Console.WriteLine(x);
+            }
+            Console.WriteLine("=");
         }
         while (true) {
             Console.Write("> ");

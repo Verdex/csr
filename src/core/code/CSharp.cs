@@ -15,9 +15,10 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
 
     public IEnumerable<CSharpAst> Next() => 
         this switch {
-            CSharpAst.Symbol => [],
-            CSharpAst.ClassDef { Name: var name } => [name],
-            CSharpAst.Namespace { Contents: var contents} => contents,
+            Symbol => [],
+            ClassDef { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
+            MethodDef => [],
+            Namespace { Contents: var contents} => contents,
             _ => throw new Exception($"Unknown {nameof(CSharpAst)} instance encountered: {this.GetType()}"),
         };
 
@@ -27,21 +28,23 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
     {
         contents = Next();
         id = this switch {
-            CSharpAst.Symbol => "symbol",
-            CSharpAst.ClassDef => "class",
-            CSharpAst.Namespace => "namespace",
+            Symbol => "symbol",
+            ClassDef => "class",
+            MethodDef => "method",
+            Namespace => "namespace",
             _ => throw new Exception($"Unknown {nameof(CSharpAst)} instance encountered: {this.GetType()}"),
         };
     }
 
     public sealed record Symbol(string Value) : CSharpAst;
 
-    // TODO for class: generics, initial constructor, base/interfaces, type constraints,
-    //  nested top level, field, property, events, method
-
     public sealed record Namespace(ImmutableArray<CSharpAst> Contents) : CSharpAst;
 
-    public sealed record ClassDef(Symbol Name) : CSharpAst;
+    // TODO for class: generics, initial constructor, base/interfaces, type constraints,
+    //  nested top level, field, property, events, method
+    public sealed record ClassDef(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
+
+    public sealed record MethodDef() : CSharpAst;
 
 
 
@@ -58,11 +61,16 @@ public static class CSharp {
     }
 
     private static IEnumerable<CSharpAst> Process(SyntaxNode node) {
+        static ImmutableArray<CSharpAst> R(SyntaxNode n) => n.ChildNodes().SelectMany(Process).ToImmutableArray();
         switch (node) {
+            case QualifiedNameSyntax qns: 
+                return [new CSharpAst.Symbol(qns.ToFullString())];
+            case MethodDeclarationSyntax m:
+                return [new CSharpAst.MethodDef()];
             case ClassDeclarationSyntax c: 
-                return [new CSharpAst.ClassDef(new CSharpAst.Symbol(c.Identifier.Text))];
+                return [new CSharpAst.ClassDef(new CSharpAst.Symbol(c.Identifier.Text), R(c))];
             case BaseNamespaceDeclarationSyntax ns:
-                return [new CSharpAst.Namespace(ns.ChildNodes().SelectMany(Process).ToImmutableArray())];
+                return [new CSharpAst.Namespace(R(ns))];
             default:
                 return [];
         }
