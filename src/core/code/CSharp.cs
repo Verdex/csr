@@ -5,12 +5,23 @@ using System.Collections.Immutable;
 
 using csr.core.traverse;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Security.Cryptography;
 
 namespace csr.core.code;
 
 
-public abstract record CSharpAst : IMatchable<string, CSharpAst> {
+public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CSharpAst> {
     private CSharpAst() { }
+
+    public IEnumerable<CSharpAst> Next() => 
+        this switch {
+            CSharpAst.Symbol => [],
+            CSharpAst.ClassDef { Name: var name } => [name],
+            CSharpAst.Namespace { Contents: var contents} => contents,
+            _ => throw new Exception($"Unknown {nameof(CSharpAst)} instance encountered: {this.GetType()}"),
+        };
+
+    public CSharpAst Self() => this;
 
     public void Deconstruct(out string id, out IEnumerable<CSharpAst> contents)
     {
