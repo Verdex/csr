@@ -25,7 +25,13 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
 
     public void Deconstruct(out string id, out IEnumerable<CSharpAst> contents)
     {
-        throw new NotImplementedException();
+        contents = Next();
+        id = this switch {
+            CSharpAst.Symbol => "symbol",
+            CSharpAst.ClassDef => "class",
+            CSharpAst.Namespace => "namespace",
+            _ => throw new Exception($"Unknown {nameof(CSharpAst)} instance encountered: {this.GetType()}"),
+        };
     }
 
     public sealed record Symbol(string Value) : CSharpAst;
