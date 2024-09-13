@@ -13,12 +13,17 @@ public static class Program {
             .SelectMany(d => Directory.GetFiles(d))
             .Where(f => f.EndsWith(".cs"));
 
+        var x = File.ReadAllText(csFiles.First());
+
+        var w = CSharp.Parse(x).ToList();
+        foreach(var ww in w) {
+            Console.WriteLine(ww);
+        }
         while (true) {
-            Console.Write(">");
+            Console.Write("> ");
             var line = Console.ReadLine();
             Console.WriteLine($"{line}");
         }
-        //CSharp.Parse();
     }
 
     private static bool IgnoreDir(string dir, string endsWith) 

@@ -22,6 +22,8 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst> {
     // TODO for class: generics, initial constructor, base/interfaces, type constraints,
     //  nested top level, field, property, events, method
 
+    public sealed record Namespace(ImmutableArray<CSharpAst> Contents) : CSharpAst;
+
     public sealed record ClassDef(Symbol Name) : CSharpAst;
 
 
@@ -32,28 +34,20 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst> {
 
 public static class CSharp {
 
-    public static void Parse() {
-        var tree = CSharpSyntaxTree.ParseText(@"
-            public sealed class X<T>(T x) : Base, Interface where X : class, IThing { 
-                public int J { get; }
-                public int I;
-                public void K() { }
-
-            }");
+    public static IEnumerable<CSharpAst> Parse(string input) {
+        var tree = CSharpSyntaxTree.ParseText(input);
         var root = tree.GetCompilationUnitRoot();
-        foreach(var w in root.ChildNodes()) {
+        return root.ChildNodes().SelectMany(Process);
+    }
 
-            Console.WriteLine($"{w.GetType()}");
-
-            foreach(var t in w.ChildNodes()) {
-                Console.WriteLine($"!!!! {t} :: {t.GetType()}");
-            }
-
-            if ( w is ClassDeclarationSyntax h)  {
-                foreach( var x in h.Members ) {
-                    Console.WriteLine(x);
-                }
-            }
+    private static IEnumerable<CSharpAst> Process(SyntaxNode node) {
+        switch (node) {
+            case ClassDeclarationSyntax c: 
+                return [new CSharpAst.ClassDef(new CSharpAst.Symbol(c.Identifier.Text))];
+            case BaseNamespaceDeclarationSyntax ns:
+                return [new CSharpAst.Namespace(ns.ChildNodes().SelectMany(Process).ToImmutableArray())];
+            default:
+                return [];
         }
     }
 }
