@@ -16,10 +16,13 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
     public IEnumerable<CSharpAst> Next() => 
         this switch {
             GenericTypeDef => [],
+            IndexedType { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
+            SimpleType => [],
             Symbol => [],
-            ClassDef { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
-            MethodDef => [],
+            Parameter { Contents: var contents } => contents,
             Namespace { Contents: var contents} => contents,
+            ClassDef { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
+            MethodDef { Name: var name } => [name],
             _ => throw new Exception($"Unknown {nameof(CSharpAst)} instance encountered: {this.GetType()}"),
         };
 
@@ -30,16 +33,23 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
         contents = Next();
         id = this switch {
             GenericTypeDef => "generic",
+            IndexedType => "indexedType",
+            SimpleType => "simpleType",
             Symbol => "symbol",
+            Parameter => "parameter",
+            Namespace => "namespace",
             ClassDef => "class",
             MethodDef => "method",
-            Namespace => "namespace",
             _ => throw new Exception($"Unknown {nameof(CSharpAst)} instance encountered: {this.GetType()}"),
         };
     }
 
     public sealed record GenericTypeDef(string Value) : CSharpAst;
+    public sealed record IndexedType(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
+    public sealed record SimpleType(string Value) : CSharpAst;
     public sealed record Symbol(string Value) : CSharpAst;
+
+    public sealed record Parameter(ImmutableArray<CSharpAst> Contents) : CSharpAst;
 
     public sealed record Namespace(ImmutableArray<CSharpAst> Contents) : CSharpAst;
 
@@ -61,22 +71,21 @@ public static class CSharpAstExt {
 
     public static void Blarg() {
 
-        var input = @"class blargy<T, S> { }";
+        var input = @"class blargy<T>(int j, int k, T t, Blarg b, Jabber<T> j) { }";
         var tree = CSharpSyntaxTree.ParseText(input);
         var root = tree.GetCompilationUnitRoot();
-        foreach( var x in root.ChildNodes() ) {
-            if(x is ClassDeclarationSyntax y) {
-                foreach( var yy in y.ChildNodes()) {
-                    if (yy is TypeParameterListSyntax z) {
-                        foreach( var zz in z.ChildNodes() ) {
 
-                    Console.WriteLine($"{zz.GetText()} : {zz.GetType()}");
-                        }
-                    }
-                    Console.WriteLine($"{yy.GetText()} : {yy.GetType()}");
-                }
+        static void Jabber(SyntaxNode x) {
+            Console.WriteLine($"{x.GetText()}:{x.GetType()}");
+            foreach(var xx in x.ChildNodes()) {
+                Jabber(xx);
             }
         }
+
+        Jabber(root);
+        //PredefinedTypeSyntax
+        //IdentifierNameSyntax
+
     }
 
     public static IEnumerable<CSharpAst> Parse(string input) {
@@ -89,8 +98,20 @@ public static class CSharpAstExt {
         static ImmutableArray<CSharpAst> R(SyntaxNode n) => n.ChildNodes().SelectMany(Process).ToImmutableArray();
         switch (node) {
             // TODO usings, static using, using as rename
+            case GenericNameSyntax x: // Note:  This appears to be for indexed types 
+                return [new CSharpAst.IndexedType(x.Identifier.Text.ToSymbol(), R(x))];
+            case TypeArgumentListSyntax x:
+                return R(x);
+            case PredefinedTypeSyntax x:
+                return [new CSharpAst.SimpleType(x.GetText().ToString())];
+            case IdentifierNameSyntax x: // Note:  This appears to be types 
+                return [new CSharpAst.SimpleType(x.GetText().ToString())];
+            case ParameterSyntax x:
+                return [new CSharpAst.Parameter(R(x))];
+            case ParameterListSyntax x:
+                return R(x);
             case TypeParameterSyntax x:
-                return [new CSharpAst.GenericTypeDef(node.GetText().ToString())];
+                return [new CSharpAst.GenericTypeDef(x.GetText().ToString())];
             case TypeParameterListSyntax x:
                 return R(x);
             case QualifiedNameSyntax x: 
@@ -99,6 +120,7 @@ public static class CSharpAstExt {
                 return [new CSharpAst.MethodDef(x.Identifier.Text.ToSymbol())];
             case ClassDeclarationSyntax x: 
             // TODO:  base/interfaces, primary constructor, type constraints
+                // Note: TypeParameter[List]Syntax gets generics
                 return [new CSharpAst.ClassDef(x.Identifier.Text.ToSymbol(), R(x))];
             case BaseNamespaceDeclarationSyntax x:
                 // Note:  QualifiedNameSyntax gets the name out of the namespace object.

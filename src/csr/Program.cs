@@ -9,7 +9,7 @@ public static class Program {
     public static void Main() {
         var currentDirectory = Directory.GetCurrentDirectory();
 
-//CSharpAstExt.Blarg();
+        //CSharpAstExt.Blarg();
 
         //*
         var csFiles = Directory.GetDirectories(currentDirectory, "", SearchOption.AllDirectories)
