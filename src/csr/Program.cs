@@ -9,12 +9,16 @@ public static class Program {
     public static void Main() {
         var currentDirectory = Directory.GetCurrentDirectory();
 
+//CSharpAstExt.Blarg();
+
+        //*
         var csFiles = Directory.GetDirectories(currentDirectory, "", SearchOption.AllDirectories)
             .Where(d => new [] {"Debug", "Release", "bin", "obj", ".git"}.All(target => !IgnoreDir(d, target)))
             .SelectMany(d => Directory.GetFiles(d))
             .Where(f => f.EndsWith(".cs"))
             .Select(File.ReadAllText)
-            .SelectMany(CSharp.Parse);
+            .SelectMany(CSharpAstExt.Parse);
+
 
         foreach(var ww in csFiles) {
             foreach( var x in ww.ToSeq()) {
@@ -27,6 +31,7 @@ public static class Program {
             var line = Console.ReadLine();
             Console.WriteLine($"{line}");
         }
+        //*/
     }
 
     private static bool IgnoreDir(string dir, string endsWith) 
