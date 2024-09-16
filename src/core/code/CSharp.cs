@@ -19,7 +19,7 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
             IndexedType { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
             SimpleType => [],
             Symbol => [],
-            Parameter { Contents: var contents } => contents,
+            Parameter { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
             Namespace { Contents: var contents} => contents,
             ClassDef { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
             MethodDef { Name: var name } => [name],
@@ -49,7 +49,7 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
     public sealed record SimpleType(string Value) : CSharpAst;
     public sealed record Symbol(string Value) : CSharpAst;
 
-    public sealed record Parameter(ImmutableArray<CSharpAst> Contents) : CSharpAst;
+    public sealed record Parameter(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
 
     public sealed record Namespace(ImmutableArray<CSharpAst> Contents) : CSharpAst;
 
@@ -107,7 +107,7 @@ public static class CSharpAstExt {
             case IdentifierNameSyntax x: // Note:  This appears to be types 
                 return [new CSharpAst.SimpleType(x.GetText().ToString())];
             case ParameterSyntax x:
-                return [new CSharpAst.Parameter(R(x))];
+                return [new CSharpAst.Parameter(x.Identifier.Text.ToSymbol(), R(x))];
             case ParameterListSyntax x:
                 return R(x);
             case TypeParameterSyntax x:
