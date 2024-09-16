@@ -53,7 +53,7 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
 
     public sealed record Namespace(ImmutableArray<CSharpAst> Contents) : CSharpAst;
 
-    // TODO for class: initial constructor, base/interfaces, type constraints,
+    // TODO for class: base/interfaces, type constraints,
     //  nested top level, field, property, events, method
     public sealed record ClassDef(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
 
@@ -71,7 +71,7 @@ public static class CSharpAstExt {
 
     public static void Blarg() {
 
-        var input = @"class blargy<T>(int j, int k, T t, Blarg b, Jabber<T> j) { }";
+        var input = @"class blargy<T> where T : object, T : new() { }";
         var tree = CSharpSyntaxTree.ParseText(input);
         var root = tree.GetCompilationUnitRoot();
 
@@ -83,8 +83,6 @@ public static class CSharpAstExt {
         }
 
         Jabber(root);
-        //PredefinedTypeSyntax
-        //IdentifierNameSyntax
 
     }
 
@@ -119,7 +117,7 @@ public static class CSharpAstExt {
             case MethodDeclarationSyntax x:
                 return [new CSharpAst.MethodDef(x.Identifier.Text.ToSymbol())];
             case ClassDeclarationSyntax x: 
-            // TODO:  base/interfaces, primary constructor, type constraints
+            // TODO:  base/interfaces, type constraints
                 // Note: TypeParameter[List]Syntax gets generics
                 return [new CSharpAst.ClassDef(x.Identifier.Text.ToSymbol(), R(x))];
             case BaseNamespaceDeclarationSyntax x:
