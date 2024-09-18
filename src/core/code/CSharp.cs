@@ -14,16 +14,16 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
 
     public IEnumerable<CSharpAst> Next() => 
         this switch {
-            ReturnType { Contents: var contents } => [contents],
-            SuperType { Contents: var contents } => contents,
-            GenericTypeDef => [],
-            IndexedType { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
-            SimpleType => [],
-            Symbol => [],
-            Parameter { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
-            Namespace { Contents: var contents} => contents,
             ClassDef { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
+            IndexedType { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
+            GenericTypeDef => [],
             MethodDef { Name: var name } => [name],
+            Namespace { Contents: var contents} => contents,
+            Parameter { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
+            ReturnType { Contents: var contents } => [contents],
+            SimpleType => [],
+            SuperType { Contents: var contents } => contents,
+            Symbol => [],
             _ => throw new Exception($"Unknown {nameof(CSharpAst)} instance encountered: {this.GetType()}"),
         };
 
@@ -33,34 +33,25 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
     {
         contents = Next();
         id = this switch {
-            ReturnType => "returnType",
-            SuperType => "superType",
+            ClassDef => "class",
             GenericTypeDef => "generic",
             IndexedType => "indexedType",
-            SimpleType => "simpleType",
-            Symbol => "symbol",
-            Parameter => "parameter",
-            Namespace => "namespace",
-            ClassDef => "class",
             MethodDef => "method",
+            Namespace => "namespace",
+            Parameter => "parameter",
+            ReturnType => "returnType",
+            SimpleType => "simpleType",
+            SuperType => "superType",
+            Symbol => "symbol",
             _ => throw new Exception($"Unknown {nameof(CSharpAst)} instance encountered: {this.GetType()}"),
         };
     }
 
-    public sealed record ReturnType(CSharpAst Contents) : CSharpAst;
-    public sealed record SuperType(ImmutableArray<CSharpAst> Contents) : CSharpAst;
-    public sealed record GenericTypeDef(string Value) : CSharpAst;
-    public sealed record IndexedType(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
-    public sealed record SimpleType(string Value) : CSharpAst;
-    public sealed record Symbol(string Value) : CSharpAst;
-
-    public sealed record Parameter(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
-
-    public sealed record Namespace(ImmutableArray<CSharpAst> Contents) : CSharpAst;
-
     // TODO for class: type constraints,
     //  nested top level, field, property, events, method
     public sealed record ClassDef(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
+    public sealed record GenericTypeDef(string Value) : CSharpAst;
+    public sealed record IndexedType(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
 
     // TODO for methods:
     // generics, type constraints, parameters, internals, return type
@@ -69,6 +60,14 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
     // TODO what about static void blarg(this T target)
 
     public sealed record MethodDef(Symbol Name) : CSharpAst;
+    public sealed record Namespace(ImmutableArray<CSharpAst> Contents) : CSharpAst;
+    public sealed record Parameter(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
+    public sealed record ReturnType(CSharpAst Contents) : CSharpAst;
+    public sealed record SimpleType(string Value) : CSharpAst;
+    public sealed record SuperType(ImmutableArray<CSharpAst> Contents) : CSharpAst;
+    public sealed record Symbol(string Value) : CSharpAst;
+
+
 
 
 
