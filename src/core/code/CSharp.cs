@@ -54,7 +54,7 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
     public sealed record IndexedType(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
 
     // TODO for methods:
-    // generics, type constraints, parameters, internals, 
+    // type constraints, internals, 
     // TODO do constructors come for free?
     // TODO does short method declaration come for free?
     // TODO what about static void blarg(this T target)
