@@ -17,10 +17,10 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
             ClassDef { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
             IndexedType { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
             GenericTypeDef => [],
-            MethodDef { Name: var name } => [name],
+            MethodDef { Name: var name, Return: var returnType, Contents: var contents } => new CSharpAst[] {name, returnType}.Concat(contents),
             Namespace { Contents: var contents} => contents,
             Parameter { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
-            ReturnType { Contents: var contents } => [contents],
+            ReturnType { Contents: var contents } => contents,
             SimpleType => [],
             SuperType { Contents: var contents } => contents,
             Symbol => [],
@@ -54,15 +54,15 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
     public sealed record IndexedType(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
 
     // TODO for methods:
-    // generics, type constraints, parameters, internals, return type
+    // generics, type constraints, parameters, internals, 
     // TODO do constructors come for free?
     // TODO does short method declaration come for free?
     // TODO what about static void blarg(this T target)
 
-    public sealed record MethodDef(Symbol Name) : CSharpAst;
+    public sealed record MethodDef(Symbol Name, ReturnType Return, ImmutableArray<CSharpAst> Contents) : CSharpAst;
     public sealed record Namespace(ImmutableArray<CSharpAst> Contents) : CSharpAst;
     public sealed record Parameter(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
-    public sealed record ReturnType(CSharpAst Contents) : CSharpAst;
+    public sealed record ReturnType(ImmutableArray<CSharpAst> Contents) : CSharpAst;
     public sealed record SimpleType(string Value) : CSharpAst;
     public sealed record SuperType(ImmutableArray<CSharpAst> Contents) : CSharpAst;
     public sealed record Symbol(string Value) : CSharpAst;
@@ -131,8 +131,7 @@ public static class CSharpAstExt {
             case QualifiedNameSyntax x: 
                 return [x.ToFullString().ToSymbol()];
             case MethodDeclarationSyntax x:
-            //x.ReturnType
-                return [new CSharpAst.MethodDef(x.Identifier.Text.ToSymbol())];
+                return [new CSharpAst.MethodDef(x.Identifier.Text.ToSymbol(), new CSharpAst.ReturnType(R(x.ReturnType)), R(x))];
             case ClassDeclarationSyntax x: 
             // TODO:  type constraints
                 // Note: TypeParameter[List]Syntax gets generics

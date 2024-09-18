@@ -6,14 +6,20 @@ namespace csr;
 
 public static class Program {
 
-        class blargy : List<Task> { }
+        class blargy : List<Task> { 
+
+            void Method1( object x ) { }
+            T Method2<T>( object x ) { return default; }
+            IList<T> Method3<T>( object x ) { return default; }
+
+        }
 
     public static void Main() {
         var currentDirectory = Directory.GetCurrentDirectory();
 
-        CSharpAstExt.Blarg();
+        //CSharpAstExt.Blarg();
 
-        /*
+        //*
         var csFiles = Directory.GetDirectories(currentDirectory, "", SearchOption.AllDirectories)
             .Where(d => new [] {"Debug", "Release", "bin", "obj", ".git"}.All(target => !IgnoreDir(d, target)))
             .SelectMany(d => Directory.GetFiles(d))
