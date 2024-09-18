@@ -5,7 +5,6 @@ using System.Collections.Immutable;
 
 using csr.core.traverse;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Security.Cryptography;
 
 namespace csr.core.code;
 
@@ -15,6 +14,7 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
 
     public IEnumerable<CSharpAst> Next() => 
         this switch {
+            SuperType { Contents: var contents } => contents,
             GenericTypeDef => [],
             IndexedType { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
             SimpleType => [],
@@ -32,6 +32,7 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
     {
         contents = Next();
         id = this switch {
+            SuperType => "superType",
             GenericTypeDef => "generic",
             IndexedType => "indexedType",
             SimpleType => "simpleType",
@@ -44,6 +45,7 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
         };
     }
 
+    public sealed record SuperType(ImmutableArray<CSharpAst> Contents) : CSharpAst;
     public sealed record GenericTypeDef(string Value) : CSharpAst;
     public sealed record IndexedType(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
     public sealed record SimpleType(string Value) : CSharpAst;
@@ -53,9 +55,12 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
 
     public sealed record Namespace(ImmutableArray<CSharpAst> Contents) : CSharpAst;
 
-    // TODO for class: base/interfaces, type constraints,
+    // TODO for class: type constraints,
     //  nested top level, field, property, events, method
     public sealed record ClassDef(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
+
+    // TODO for methods:
+    // generics, type constraints, parameters, internals
 
     public sealed record MethodDef(Symbol Name) : CSharpAst;
 
@@ -71,18 +76,18 @@ public static class CSharpAstExt {
 
     public static void Blarg() {
 
-        var input = @"class blargy<T> where T : object, T : new() { }";
+        var input = @"class blargy { }";
         var tree = CSharpSyntaxTree.ParseText(input);
         var root = tree.GetCompilationUnitRoot();
 
-        static void Jabber(SyntaxNode x) {
-            Console.WriteLine($"{x.GetText()}:{x.GetType()}");
+        static void Jabber(SyntaxNode x, int indent) {
+            Console.WriteLine($"{new string(' ', indent)}{x.GetText()}:{x.GetType()}");
             foreach(var xx in x.ChildNodes()) {
-                Jabber(xx);
+                Jabber(xx, indent + 1);
             }
         }
 
-        Jabber(root);
+        Jabber(root, 0);
 
     }
 
@@ -96,6 +101,10 @@ public static class CSharpAstExt {
         static ImmutableArray<CSharpAst> R(SyntaxNode n) => n.ChildNodes().SelectMany(Process).ToImmutableArray();
         switch (node) {
             // TODO usings, static using, using as rename
+            case BaseListSyntax x:
+                return [new CSharpAst.SuperType(R(x))];
+            case SimpleBaseTypeSyntax x:
+                return R(x);
             case GenericNameSyntax x: // Note:  This appears to be for indexed types 
                 return [new CSharpAst.IndexedType(x.Identifier.Text.ToSymbol(), R(x))];
             case TypeArgumentListSyntax x:
@@ -117,7 +126,7 @@ public static class CSharpAstExt {
             case MethodDeclarationSyntax x:
                 return [new CSharpAst.MethodDef(x.Identifier.Text.ToSymbol())];
             case ClassDeclarationSyntax x: 
-            // TODO:  base/interfaces, type constraints
+            // TODO:  type constraints
                 // Note: TypeParameter[List]Syntax gets generics
                 return [new CSharpAst.ClassDef(x.Identifier.Text.ToSymbol(), R(x))];
             case BaseNamespaceDeclarationSyntax x:
