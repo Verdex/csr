@@ -60,7 +60,10 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
     public sealed record ClassDef(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
 
     // TODO for methods:
-    // generics, type constraints, parameters, internals
+    // generics, type constraints, parameters, internals, return type
+    // TODO do constructors come for free?
+    // TODO does short method declaration come for free?
+    // TODO what about static void blarg(this T target)
 
     public sealed record MethodDef(Symbol Name) : CSharpAst;
 
@@ -76,7 +79,9 @@ public static class CSharpAstExt {
 
     public static void Blarg() {
 
-        var input = @"class blargy { }";
+        var input = @"class blargy { 
+            public T SomeMethod(T input, object<T> other) where T : IInterface<T> { }
+        }";
         var tree = CSharpSyntaxTree.ParseText(input);
         var root = tree.GetCompilationUnitRoot();
 
