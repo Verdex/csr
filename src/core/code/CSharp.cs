@@ -14,6 +14,7 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
 
     public IEnumerable<CSharpAst> Next() => 
         this switch {
+            ReturnType { Contents: var contents } => [contents],
             SuperType { Contents: var contents } => contents,
             GenericTypeDef => [],
             IndexedType { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
@@ -32,6 +33,7 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
     {
         contents = Next();
         id = this switch {
+            ReturnType => "returnType",
             SuperType => "superType",
             GenericTypeDef => "generic",
             IndexedType => "indexedType",
@@ -45,6 +47,7 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
         };
     }
 
+    public sealed record ReturnType(CSharpAst Contents) : CSharpAst;
     public sealed record SuperType(ImmutableArray<CSharpAst> Contents) : CSharpAst;
     public sealed record GenericTypeDef(string Value) : CSharpAst;
     public sealed record IndexedType(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
@@ -129,6 +132,7 @@ public static class CSharpAstExt {
             case QualifiedNameSyntax x: 
                 return [x.ToFullString().ToSymbol()];
             case MethodDeclarationSyntax x:
+            //x.ReturnType
                 return [new CSharpAst.MethodDef(x.Identifier.Text.ToSymbol())];
             case ClassDeclarationSyntax x: 
             // TODO:  type constraints
