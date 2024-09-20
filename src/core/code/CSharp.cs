@@ -85,7 +85,8 @@ public static class CSharpAstExt {
     public static void Blarg() {
 
         var input = @"class blargy<T> where T : IInterface { 
-            public T SomeMethod(T input, object<T> other) where T : IInterface<T> { }
+            public int Blarg(this int blarg) => 0;
+
         }";
         var tree = CSharpSyntaxTree.ParseText(input);
         var root = tree.GetCompilationUnitRoot();
@@ -140,7 +141,6 @@ public static class CSharpAstExt {
             case MethodDeclarationSyntax x:
                 return [new CSharpAst.MethodDef(x.Identifier.Text.ToSymbol(), new CSharpAst.ReturnType(R(x.ReturnType)), R(x))];
             case ClassDeclarationSyntax x: 
-            // TODO:  type constraints
                 // Note: TypeParameter[List]Syntax gets generics
                 return [new CSharpAst.ClassDef(x.Identifier.Text.ToSymbol(), R(x))];
             case BaseNamespaceDeclarationSyntax x:

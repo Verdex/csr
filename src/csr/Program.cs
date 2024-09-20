@@ -17,9 +17,9 @@ public static class Program {
     public static void Main() {
         var currentDirectory = Directory.GetCurrentDirectory();
 
-        //CSharpAstExt.Blarg();
+        CSharpAstExt.Blarg();
 
-        //*
+        /*
         var csFiles = Directory.GetDirectories(currentDirectory, "", SearchOption.AllDirectories)
             .Where(d => new [] {"Debug", "Release", "bin", "obj", ".git"}.All(target => !IgnoreDir(d, target)))
             .SelectMany(d => Directory.GetFiles(d))
