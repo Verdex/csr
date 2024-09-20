@@ -15,6 +15,7 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
     public IEnumerable<CSharpAst> Next() => 
         this switch {
             ClassDef { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
+            Constraint { Contents: var contents } => contents,
             IndexedType { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
             GenericTypeDef => [],
             MethodDef { Name: var name, Return: var returnType, Contents: var contents } => new CSharpAst[] {name, returnType}.Concat(contents),
@@ -34,6 +35,7 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
         contents = Next();
         id = this switch {
             ClassDef => "class",
+            Constraint => "constraint",
             GenericTypeDef => "generic",
             IndexedType => "indexedType",
             MethodDef => "method",
@@ -47,14 +49,15 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
         };
     }
 
-    // TODO for class: type constraints,
+    // TODO for class: 
     //  nested top level, field, property, events, method
     public sealed record ClassDef(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
+    public sealed record Constraint(ImmutableArray<CSharpAst> Contents) : CSharpAst;
     public sealed record GenericTypeDef(string Value) : CSharpAst;
     public sealed record IndexedType(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
 
     // TODO for methods:
-    // type constraints, internals, 
+    //  internals, 
     // TODO do constructors come for free?
     // TODO does short method declaration come for free?
     // TODO what about static void blarg(this T target)
@@ -81,7 +84,7 @@ public static class CSharpAstExt {
 
     public static void Blarg() {
 
-        var input = @"class blargy { 
+        var input = @"class blargy<T> where T : IInterface { 
             public T SomeMethod(T input, object<T> other) where T : IInterface<T> { }
         }";
         var tree = CSharpSyntaxTree.ParseText(input);
@@ -108,6 +111,10 @@ public static class CSharpAstExt {
         static ImmutableArray<CSharpAst> R(SyntaxNode n) => n.ChildNodes().SelectMany(Process).ToImmutableArray();
         switch (node) {
             // TODO usings, static using, using as rename
+            case TypeParameterConstraintSyntax x : // Note:  Supposedly covers:  TypeConstraintSyntax, ConstructorConstraintSyntax, and ClassOrStructConstraintSyntax
+                return R(x);
+            case TypeParameterConstraintClauseSyntax x:
+                return [new CSharpAst.Constraint(R(x))];
             case BaseListSyntax x:
                 return [new CSharpAst.SuperType(R(x))];
             case SimpleBaseTypeSyntax x:
