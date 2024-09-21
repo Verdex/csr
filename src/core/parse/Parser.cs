@@ -1,4 +1,6 @@
 
+using System.Collections.Immutable;
+
 namespace csr.core.parse;
 
 public abstract record Result<T> {
@@ -29,7 +31,24 @@ public sealed record Parser<T>(Func<string, int, Result<T>> P) {
             _ => throw new Exception("Encountered unsupported Result"),
         });
 
-    // TODO alternate
+    public Parser<T> Or(params Parser<T>[] other) => new Parser<T>((input, index) => {
+        {
+            var r = P(input, index);
+            if(r is Result<T>.Succ) {
+                return r;
+            }
+        }
+
+        foreach(var p in other) {
+            var r = P(input, index);
+            if(r is Result<T>.Succ) {
+                return r;
+            }
+        }
+
+        return new Result<T>.Fail(index, "Or failure");
+    });
+
     // TODO where?
     // TODO end?
     // TODO zero or more?
