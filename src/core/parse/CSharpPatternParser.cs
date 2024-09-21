@@ -78,7 +78,7 @@ public class CSharpPatternParser {
     private static Pattern<string, CSharpAst> Exact(string t, ImmutableList<Pattern<string, CSharpAst>> contents) => new Pattern<string, CSharpAst>.Exact(t, contents);
     private static Pattern<string, CSharpAst> Contents(ImmutableList<Pattern<string, CSharpAst>> contents) => new Pattern<string, CSharpAst>.Contents(contents);
     private static Pattern<string, CSharpAst> Kind(string t) => new Pattern<string, CSharpAst>.Kind(t);
-    private static Pattern<string, CSharpAst> And(Pattern<string, CSharpAst> a, Pattern<Type, CSharpAst> b) => new Pattern<string, CSharpAst>.And(a, b);
+    private static Pattern<string, CSharpAst> And(Pattern<string, CSharpAst> a, Pattern<string, CSharpAst> b) => new Pattern<string, CSharpAst>.And(a, b);
     private static Pattern<string, CSharpAst> Or(Pattern<string, CSharpAst> a, Pattern<string, CSharpAst> b) => new Pattern<string, CSharpAst>.Or(a, b);
     private static Pattern<string, CSharpAst> Capture(string s) => new Pattern<string, CSharpAst>.Capture(s);
     private static Pattern<string, CSharpAst> TemplateVar(string s) => new Pattern<string, CSharpAst>.TemplateVar(s);
