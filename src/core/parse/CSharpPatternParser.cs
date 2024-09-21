@@ -73,5 +73,20 @@ public class CSharpPatternParser {
     });
 
     private sealed record Unit();
+
+    private static Pattern<string, CSharpAst> Wild() => new Pattern<string, CSharpAst>.Wild();
+    private static Pattern<string, CSharpAst> Exact(string t, ImmutableList<Pattern<string, CSharpAst>> contents) => new Pattern<string, CSharpAst>.Exact(t, contents);
+    private static Pattern<string, CSharpAst> Contents(ImmutableList<Pattern<string, Tree>> contents) => new Pattern<Type, Tree>.Contents(contents);
+    private static Pattern<string, CSharpAst> Kind(string t) => new Pattern<string, Tree>.Kind(t);
+    private static Pattern<string, CSharpAst> And(Pattern<string, Tree> a, Pattern<Type, Tree> b) => new Pattern<Type, Tree>.And(a, b);
+    private static Pattern<string, CSharpAst> Or(Pattern<string, Tree> a, Pattern<Type, Tree> b) => new Pattern<Type, Tree>.Or(a, b);
+    private static Pattern<string, CSharpAst> Capture(string s) => new Pattern<string, CSharpAst>.Capture(s);
+    private static Pattern<string, CSharpAst> TemplateVar(string s) => new Pattern<string, CSharpAst>.TemplateVar(s);
+    private static Pattern<string, CSharpAst> SubContentPath(ImmutableList<Pattern<string, CSharpAst>> contents) => new Pattern<string, CSharpAst>.SubContentPath(contents);
+    private static Pattern<string, CSharpAst> PathNext() => new Pattern<string, CSharpAst>.PathNext();
+    private static Pattern<string, CSharpAst> Path(ImmutableList<Pattern<string, CSharpAst>> contents) => new Pattern<string, CSharpAst>.Path(contents);
+    private static Pattern<string, CSharpAst> Predicate(Func<CSharpAst, bool> predicate) => new Pattern<string, CSharpAst>.Predicate(predicate);
+    private static Pattern<string, CSharpAst> MatchWith(Func<IReadOnlyDictionary<string, CSharpAst>, Pattern<string, CSharpAst>> func) => new Pattern<string, CSharpAst>.MatchWith(func);
+
 }
 
