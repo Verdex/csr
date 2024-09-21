@@ -57,9 +57,30 @@ public sealed record Parser<T>(Func<string, int, Result<T>> P) {
         return new Result<T>.Fail(index, "Or failure");
     });
 
-    // TODO where?
-    // TODO end?
-    // TODO zero or more?
-    // TODO maybe ?
+    public Parser<IEnumerable<T>> ZeroOrMore() => new Parser<IEnumerable<T>>((input, index) => {
+        var r = P(input, index);
 
+        if (r is Result<T>.Fail) {
+            return new Result<IEnumerable<T>>.Succ(index, []);
+        }
+
+        var results = new List<T>();
+
+        results.Add(((Result<T>.Succ)r).Item);
+
+        var newIndex = ((Result<T>.Succ)r).Index;
+
+        while (true) {
+            r = P(input, newIndex);
+            if (r is Result<T>.Succ s) {
+                results.Add(s.Item);
+                newIndex = s.Index;
+            }
+            else {
+                break;
+            }
+        }
+
+        return new Result<IEnumerable<T>>.Succ(newIndex, results);
+    });
 }
