@@ -2,7 +2,6 @@
 using csr.core.traverse;
 using csr.core.code;
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace csr.core.parse;
 
@@ -11,6 +10,21 @@ namespace csr.core.parse;
 public class CSharpPatternParser {
     private readonly Parser<Pattern<string, CSharpAst>> _parser;
     public CSharpPatternParser() {
+        var lSquare = Letter('[');
+        var rSquare = Letter(']');
+        var lCurl = Letter('{');
+        var rCurl = Letter('}');
+        var lParen = Letter('(');
+        var rParen = Letter(')');
+        var captureVar = from s in Symbol() 
+                         select new Pattern<string, CSharpAst>.Capture(s);
+        var templateVar = from _ in Letter('$')
+                          from s in Symbol(clearSpace: false)
+                          select new Pattern<string, CSharpAst>.TemplateVar(s);
+
+
+        _parser = captureVar.Or(templateVar);
+
     }
 
     public bool TryParse(string input, out Pattern<string, CSharpAst> pattern) {
