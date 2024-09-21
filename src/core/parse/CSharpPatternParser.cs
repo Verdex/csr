@@ -8,19 +8,22 @@ namespace csr.core.parse;
 
 
 
-public static class CSharpPatternParser {
-    public static void Blah() {
-        var blah = from x in new Parser<Pattern<string, CSharpAst>>((a, b) => new Result<Pattern<string, CSharpAst>>.Succ(0, null))
-                   from w in new Parser<Pattern<string, CSharpAst>>((a, b) => new Result<Pattern<string, CSharpAst>>.Succ(0, null))
-                   from z in new Parser<Pattern<string, CSharpAst>>((a, b) => new Result<Pattern<string, CSharpAst>>.Succ(0, null))
-                   select new Pattern<string, CSharpAst>.Exact("id", [x, w, z]);
+public class CSharpPatternParser {
+    private readonly Parser<Pattern<string, CSharpAst>> _parser;
+    public CSharpPatternParser() {
     }
-    /*
-    private static ParseResult<Pattern<CSharpAst>> Fail(string message) => new ParseResult<Pattern<CSharpAst>>.Failure(message);
-    private static ParseResult<Pattern<CSharpAst>> Success(Pattern<CSharpAst> item) => new ParseResult<Pattern<CSharpAst>>.Success(item);
 
-    public static ParseResult<Pattern<CSharpAst>> Parse(string input) {
-        return Fail("blarg");
+    public bool TryParse(string input, out Pattern<string, CSharpAst> pattern) {
+        switch (_parser.Parse(input)) {
+            case Result<Pattern<string, CSharpAst>>.Succ s:
+                pattern = s.Item;
+                return true;
+            case Result<Pattern<string, CSharpAst>>.Fail:
+                pattern = new Pattern<string, CSharpAst>.Wild();
+                return false;
+            default:
+                throw new Exception("Encountered unknown Result in CSharpPatternParser::TryParse");
+        }
     }
     */
 }
