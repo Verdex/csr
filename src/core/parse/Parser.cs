@@ -29,4 +29,10 @@ public sealed record Parser<T>(Func<string, int, Result<T>> P) {
             _ => throw new Exception("Encountered unsupported Result"),
         });
 
+    // TODO alternate
+    // TODO where?
+    // TODO end?
+    // TODO zero or more?
+    // TODO maybe ?
+
 }
