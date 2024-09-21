@@ -16,14 +16,14 @@ public class CSharpPatternParser {
         var rCurl = Letter('}');
         var lParen = Letter('(');
         var rParen = Letter(')');
-        var captureVar = from s in Symbol() 
-                         select new Pattern<string, CSharpAst>.Capture(s);
+        var capture = from s in Symbol() 
+                      select Capture(s);
         var templateVar = from _ in Letter('$')
                           from s in Symbol(clearSpace: false)
-                          select new Pattern<string, CSharpAst>.TemplateVar(s);
+                          select TemplateVar(s);
 
 
-        _parser = captureVar.Or(templateVar);
+        _parser = capture.Or(templateVar);
 
     }
 
@@ -76,10 +76,10 @@ public class CSharpPatternParser {
 
     private static Pattern<string, CSharpAst> Wild() => new Pattern<string, CSharpAst>.Wild();
     private static Pattern<string, CSharpAst> Exact(string t, ImmutableList<Pattern<string, CSharpAst>> contents) => new Pattern<string, CSharpAst>.Exact(t, contents);
-    private static Pattern<string, CSharpAst> Contents(ImmutableList<Pattern<string, Tree>> contents) => new Pattern<Type, Tree>.Contents(contents);
-    private static Pattern<string, CSharpAst> Kind(string t) => new Pattern<string, Tree>.Kind(t);
-    private static Pattern<string, CSharpAst> And(Pattern<string, Tree> a, Pattern<Type, Tree> b) => new Pattern<Type, Tree>.And(a, b);
-    private static Pattern<string, CSharpAst> Or(Pattern<string, Tree> a, Pattern<Type, Tree> b) => new Pattern<Type, Tree>.Or(a, b);
+    private static Pattern<string, CSharpAst> Contents(ImmutableList<Pattern<string, CSharpAst>> contents) => new Pattern<string, CSharpAst>.Contents(contents);
+    private static Pattern<string, CSharpAst> Kind(string t) => new Pattern<string, CSharpAst>.Kind(t);
+    private static Pattern<string, CSharpAst> And(Pattern<string, CSharpAst> a, Pattern<Type, CSharpAst> b) => new Pattern<string, CSharpAst>.And(a, b);
+    private static Pattern<string, CSharpAst> Or(Pattern<string, CSharpAst> a, Pattern<string, CSharpAst> b) => new Pattern<string, CSharpAst>.Or(a, b);
     private static Pattern<string, CSharpAst> Capture(string s) => new Pattern<string, CSharpAst>.Capture(s);
     private static Pattern<string, CSharpAst> TemplateVar(string s) => new Pattern<string, CSharpAst>.TemplateVar(s);
     private static Pattern<string, CSharpAst> SubContentPath(ImmutableList<Pattern<string, CSharpAst>> contents) => new Pattern<string, CSharpAst>.SubContentPath(contents);
