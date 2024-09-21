@@ -45,7 +45,11 @@ public class CSharpPatternParser {
     private static Result<Pattern<string, CSharpAst>> Fail(int index, string message) 
         => new Result<Pattern<string, CSharpAst>>.Fail(index, message);
 
-    private static Parser<Unit> Letter(char c) => new Parser<Unit>((input, index) => { 
+    private static Parser<Unit> Letter(char c, bool clearSpace = true) => new Parser<Unit>((input, index) => { 
+        while (clearSpace && char.IsWhiteSpace(input[index])) {
+            index += 1;
+        }
+
         if(input[index] == c) {
             return new Result<Unit>.Succ(index + 1, new Unit());
         }
@@ -54,7 +58,11 @@ public class CSharpPatternParser {
         }
     });
 
-    private static Parser<string> Symbol() => new Parser<string>((input, index) => { 
+    private static Parser<string> Symbol(bool clearSpace = true) => new Parser<string>((input, index) => { 
+        while (clearSpace && char.IsWhiteSpace(input[index])) {
+            index += 1;
+        }
+
         if (!char.IsAsciiLetter(input[index]) && input[index] != '_') {
             return new Result<string>.Fail(index, $"expected symbol character but found {input[index]}");
         }
