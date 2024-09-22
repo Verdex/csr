@@ -39,7 +39,7 @@ public sealed record Parser<T>(Func<string, int, Result<T>> P) {
             _ => throw new Exception("Encountered unsupported Result in Where"),
         });
 
-    public Parser<T> Or(params Parser<T>[] other) => new Parser<T>((input, index) => {
+    public Parser<T> Or(params Parser<T>[] alternatives) => new Parser<T>((input, index) => {
         {
             var r = P(input, index);
             if(r is Result<T>.Succ) {
@@ -47,8 +47,8 @@ public sealed record Parser<T>(Func<string, int, Result<T>> P) {
             }
         }
 
-        foreach(var p in other) {
-            var r = P(input, index);
+        foreach(var alt in alternatives) {
+            var r = alt.P(input, index);
             if(r is Result<T>.Succ) {
                 return r;
             }
