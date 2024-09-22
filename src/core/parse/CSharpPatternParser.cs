@@ -10,6 +10,8 @@ namespace csr.core.parse;
 public class CSharpPatternParser {
     private readonly Parser<Pattern<string, CSharpAst>> _parser;
     public CSharpPatternParser() {
+        var topLevel = TopLevel();
+
         var lSquare = Letter('[');
         var rSquare = Letter(']');
         var lCurl = Letter('{');
@@ -69,6 +71,8 @@ public class CSharpPatternParser {
 
         return new Result<string>.Succ(index + sym.Length, sym);
     });
+
+    private Parser<Pattern<string, CSharpAst>> TopLevel() => new ((input, index) => _parser.P(input, index));
 
     private sealed record Unit();
 
