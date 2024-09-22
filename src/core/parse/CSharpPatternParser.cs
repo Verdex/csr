@@ -18,6 +18,7 @@ public class CSharpPatternParser {
         var rCurl = Letter('}');
         var lParen = Letter('(');
         var rParen = Letter(')');
+        var comma = Letter(',');
         var wild = from s in Symbol() 
                    where s == "_"
                    select Wild();
@@ -27,8 +28,20 @@ public class CSharpPatternParser {
                           from s in Symbol(clearSpace: false)
                           select TemplateVar(s);
 
+        var patternComma = from p in topLevel 
+                           from _ in comma
+                           select p;
 
-        _parser = wild.Or(capture, templateVar);
+        var patternList = from pc in patternComma.ZeroOrMore()
+                          from p in topLevel 
+                          select pc.Append(p);
+
+        var contents = from _1 in lSquare
+                       from ps in patternList
+                       from _2 in rSquare
+                       select Contents(ps.ToImmutableList());
+
+        _parser = contents.Or(wild, capture, templateVar);
 
     }
 
