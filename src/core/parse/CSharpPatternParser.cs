@@ -16,6 +16,9 @@ public class CSharpPatternParser {
         var rCurl = Letter('}');
         var lParen = Letter('(');
         var rParen = Letter(')');
+        var wild = from s in Symbol() 
+                   where s == "_"
+                   select Wild();
         var capture = from s in Symbol() 
                       select Capture(s);
         var templateVar = from _ in Letter('$')
@@ -23,7 +26,7 @@ public class CSharpPatternParser {
                           select TemplateVar(s);
 
 
-        _parser = capture.Or(templateVar);
+        _parser = wild.Or(capture, templateVar);
 
     }
 
