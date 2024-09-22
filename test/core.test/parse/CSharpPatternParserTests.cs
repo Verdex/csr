@@ -34,5 +34,21 @@ public class CSharpPatternParserTests {
         });
     }
 
+    [TestCase("[a, b, c]", 3)]
+    [TestCase("[[a], b, c]", 3)]
+    public void ShouldParseContents(string input, int length) {
+        var parser = Parser(); 
+
+        var success = parser.TryParse(input, out var result);
+
+        Assert.Multiple(() => {
+            Assert.That(success, Is.True);
+
+            var pattern = result as Pattern<string,CSharpAst>.Contents;
+            Assert.That(pattern, Is.Not.Null);
+            Assert.That(pattern!.Cs.Count, Is.EqualTo(length));
+        });
+    }
+
     private static CSharpPatternParser Parser() => new();
 }
