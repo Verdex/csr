@@ -43,11 +43,6 @@ public class CSharpPatternParser {
         }
     }
 
-    private static Result<Pattern<string, CSharpAst>> Succ(int index, Pattern<string, CSharpAst> pattern) 
-        => new Result<Pattern<string, CSharpAst>>.Succ(index, pattern);
-    private static Result<Pattern<string, CSharpAst>> Fail(int index, string message) 
-        => new Result<Pattern<string, CSharpAst>>.Fail(index, message);
-
     private static Parser<Unit> Letter(char c, bool clearSpace = true) => new Parser<Unit>((input, index) => { 
         while (clearSpace && char.IsWhiteSpace(input[index])) {
             index += 1;
