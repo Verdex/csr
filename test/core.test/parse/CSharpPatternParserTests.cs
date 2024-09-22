@@ -10,9 +10,13 @@ public class CSharpPatternParserTests {
 
     [TestCase("x", true)]
     [TestCase("_blah", true)]
-    [TestCase("_", false)]
     [TestCase("x1234", true)]
     [TestCase("x_1234", true)]
+    [TestCase("_", false)]
+    [TestCase("$_", false)]
+    [TestCase("$_blarg", false)]
+    [TestCase("$_blarg1234", false)]
+    [TestCase("$x1234", false)]
     public void ShouldParseCapture(string input, bool isCapture) {
         var parser = Parser();
         
