@@ -41,7 +41,26 @@ public class CSharpPatternParser {
                        from _2 in rSquare
                        select Contents(ps.ToImmutableList());
 
-        _parser = contents.Or(wild, capture, templateVar);
+        var subContentPath = from _1 in lSquare
+                             from _2 in Letter('|', clearSpace: false)
+                             from ps in patternList
+                             from _3 in Letter('|')
+                             from _4 in Letter(']', clearSpace: false)
+                             select SubContentPath(ps.ToImmutableList());
+        
+        var exact = from name in Symbol()
+                    from _1 in lParen
+                    from ps in patternList
+                    from _2 in rParen
+                    select Exact(name, ps.ToImmutableList());
+
+        var kind = from _1 in Letter(':')
+                   from name in Symbol(clearSpace: false)
+                   select Kind(name);
+
+        // Note:  exact should go before capture because a caputre looks like the beginning of an exact
+
+        _parser = exact.Or(kind, contents, subContentPath, wild, capture, templateVar);
 
     }
 
