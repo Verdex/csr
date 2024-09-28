@@ -59,6 +59,10 @@ public class CSharpPatternParser {
     }
 
     private static Parser<Unit> Letter(char c, bool clearSpace = true) => new Parser<Unit>((input, index) => { 
+        if (index >= input.Length) {
+            return new Result<Unit>.Fail(index, $"expected End Of Input encountered");
+        }
+
         while (clearSpace && char.IsWhiteSpace(input[index])) {
             index += 1;
         }
@@ -72,6 +76,10 @@ public class CSharpPatternParser {
     });
 
     private static Parser<string> Symbol(bool clearSpace = true) => new Parser<string>((input, index) => { 
+        if (index >= input.Length) {
+            return new Result<string>.Fail(index, $"expected End Of Input encountered");
+        }
+
         while (clearSpace && char.IsWhiteSpace(input[index])) {
             index += 1;
         }
