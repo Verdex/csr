@@ -19,11 +19,14 @@ public class CSharpPatternParser {
         var lParen = Letter('(');
         var rParen = Letter(')');
         var comma = Letter(',');
+
         var wild = from s in Symbol() 
                    where s == "_"
                    select Wild();
+
         var capture = from s in Symbol() 
                       select Capture(s);
+
         var templateVar = from _ in Letter('$')
                           from s in Symbol(clearSpace: false)
                           select TemplateVar(s);
