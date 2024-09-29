@@ -71,7 +71,9 @@ public class CSharpPatternParser {
                     from _3 in Letter(')')
                     select new { Type = s, Other = other };
 
-        var followup = from first in topLevel
+        var localTop = exact.Or(kind, contents, subContentPath, path, wild, capture, templateVar, pathNext);
+
+        var followup = from first in localTop 
                        from follow in andOr
                        select follow switch { 
                             { Type: "and", Other: var other } => And(first, other),
@@ -87,9 +89,12 @@ public class CSharpPatternParser {
 
     public bool TryParse(string input, out Pattern<string, CSharpAst> pattern) {
         switch (_parser.Parse(input)) {
-            case Result<Pattern<string, CSharpAst>>.Succ s:
+            case Result<Pattern<string, CSharpAst>>.Succ s when s.Index == input.Length:
                 pattern = s.Item;
                 return true;
+            case Result<Pattern<string, CSharpAst>>.Succ s:
+                pattern = s.Item;
+                return false;
             case Result<Pattern<string, CSharpAst>>.Fail:
                 pattern = new Pattern<string, CSharpAst>.Wild();
                 return false;

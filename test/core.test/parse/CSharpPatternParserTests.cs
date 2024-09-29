@@ -51,5 +51,13 @@ public class CSharpPatternParserTests {
         });
     }
 
+    [TestCase("x.and(y)")]
+    [TestCase("x.and(y).and(z)")]
+    public void ShouldParseFollow(string input) {
+        var parser = Parser();
+        var success = parser.TryParse(input, out _);
+        Assert.That(success, Is.True);
+    }
+
     private static CSharpPatternParser Parser() => new();
 }
