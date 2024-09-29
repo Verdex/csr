@@ -12,13 +12,8 @@ public class CSharpPatternParser {
     public CSharpPatternParser() {
         var topLevel = TopLevel();
 
-        var lSquare = Letter('[');
-        var rSquare = Letter(']');
-        var lCurl = Letter('{');
-        var rCurl = Letter('}');
-        var lParen = Letter('(');
-        var rParen = Letter(')');
-        var comma = Letter(',');
+        var pathNext = from _ in Letter('^')
+                       select PathNext();
 
         var wild = from s in Symbol() 
                    where s == "_"
@@ -32,38 +27,61 @@ public class CSharpPatternParser {
                           select TemplateVar(s);
 
         var patternComma = from p in topLevel 
-                           from _ in comma
+                           from _ in Letter(',') 
                            select p;
 
         var patternList = from pc in patternComma.ZeroOrMore()
                           from p in topLevel 
                           select pc.Append(p);
 
-        var contents = from _1 in lSquare
+        var contents = from _1 in Letter('[')
                        from ps in patternList
-                       from _2 in rSquare
+                       from _2 in Letter(']') 
                        select Contents(ps.ToImmutableList());
 
-        var subContentPath = from _1 in lSquare
+        var subContentPath = from _1 in Letter('[') 
                              from _2 in Letter('|', clearSpace: false)
                              from ps in patternList
                              from _3 in Letter('|')
                              from _4 in Letter(']', clearSpace: false)
                              select SubContentPath(ps.ToImmutableList());
         
+        var path = from _1 in Letter('{') 
+                   from _2 in Letter('|', clearSpace: false)
+                   from ps in patternList
+                   from _3 in Letter('|')
+                   from _4 in Letter('}', clearSpace: false)
+                   select Path(ps.ToImmutableList());
+        
         var exact = from name in Symbol()
-                    from _1 in lParen
+                    from _1 in Letter('(')
                     from ps in patternList
-                    from _2 in rParen
+                    from _2 in Letter(')')
                     select Exact(name, ps.ToImmutableList());
 
         var kind = from _1 in Letter(':')
                    from name in Symbol(clearSpace: false)
                    select Kind(name);
 
+        var andOr = from _1 in Letter('.')
+                    from s in Symbol()
+                    where s == "and" || s == "or"
+                    from _2 in Letter('(')
+                    from other in topLevel
+                    from _3 in Letter(')')
+                    select new { Type = s, Other = other };
+
+        var followup = from first in topLevel
+                       from follow in andOr
+                       select follow switch { 
+                            { Type: "and", Other: var other } => And(first, other),
+                            { Type: "or", Other: var other } => Or(first, other),
+                            { Type: var t } => throw new Exception($"Unexpected followup encountered {t}"),
+                       };
+
         // Note:  exact should go before capture because a caputre looks like the beginning of an exact
 
-        _parser = exact.Or(kind, contents, subContentPath, wild, capture, templateVar);
+        _parser = followup.Or(exact, kind, contents, subContentPath, path, wild, capture, templateVar, pathNext);
 
     }
 

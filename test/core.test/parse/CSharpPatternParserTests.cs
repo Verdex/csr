@@ -17,6 +17,7 @@ public class CSharpPatternParserTests {
     [TestCase("$_blarg", false)]
     [TestCase("$_blarg1234", false)]
     [TestCase("$x1234", false)]
+    [TestCase(":x1234", false)]
     public void ShouldParseCapture(string input, bool isCapture) {
         var parser = Parser();
         
