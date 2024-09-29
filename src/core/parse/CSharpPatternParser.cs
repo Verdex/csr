@@ -74,12 +74,12 @@ public class CSharpPatternParser {
         var localTop = exact.Or(kind, contents, subContentPath, path, wild, capture, templateVar, pathNext);
 
         var followup = from first in localTop 
-                       from follow in andOr
-                       select follow switch { 
-                            { Type: "and", Other: var other } => And(first, other),
-                            { Type: "or", Other: var other } => Or(first, other),
+                       from follow in andOr.ZeroOrMore()
+                       select follow.Aggregate(first, (f, n) => n switch { 
+                            { Type: "and", Other: var other } => And(f, other),
+                            { Type: "or", Other: var other } => Or(f, other),
                             { Type: var t } => throw new Exception($"Unexpected followup encountered {t}"),
-                       };
+                       });
 
         // Note:  exact should go before capture because a caputre looks like the beginning of an exact
 
