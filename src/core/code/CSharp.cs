@@ -1,10 +1,9 @@
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Collections.Immutable;
-
-using csr.core.traverse;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Immutable;
+using csr.core.traverse;
 
 namespace csr.core.code;
 
