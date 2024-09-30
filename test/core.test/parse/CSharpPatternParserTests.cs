@@ -57,10 +57,32 @@ public class CSharpPatternParserTests {
     [TestCase("x.or(y).or(z)")]
     [TestCase("x.or(y.or(w.and(h))).or(z)")]
     [TestCase("[x.or(y)].and([a, b])")]
+    [TestCase("[| x.and(y) |].or([| z |])")]
+    [TestCase("{| x.and(y) |}.or( {| z.or(^) |})")]
     public void ShouldParseFollow(string input) {
         var parser = Parser();
         var success = parser.TryParse(input, out _);
         Assert.That(success, Is.True);
+    }
+
+    [Test]
+    public void ShouldParseWild() {
+        var parser = Parser();
+        var success = parser.TryParse("_", out var pattern);
+        Assert.Multiple(() => {
+            Assert.That(success, Is.True);
+            Assert.That(pattern, Is.TypeOf<Pattern<string, CSharpAst>.Wild>());
+        });
+    }
+
+    [Test]
+    public void ShouldParseKind() {
+        var parser = Parser();
+        var success = parser.TryParse(":class", out var pattern);
+        Assert.Multiple(() => {
+            Assert.That(success, Is.True);
+            Assert.That(pattern, Is.TypeOf<Pattern<string, CSharpAst>.Kind>());
+        });
     }
 
     private static CSharpPatternParser Parser() => new();
