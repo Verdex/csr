@@ -56,6 +56,7 @@ public class CSharpPatternParserTests {
     [TestCase("x.and(y).or(z)")]
     [TestCase("x.or(y).or(z)")]
     [TestCase("x.or(y.or(w.and(h))).or(z)")]
+    [TestCase("[x.or(y)].and([a, b])")]
     public void ShouldParseFollow(string input) {
         var parser = Parser();
         var success = parser.TryParse(input, out _);

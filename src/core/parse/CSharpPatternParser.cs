@@ -5,8 +5,6 @@ using System.Collections.Immutable;
 
 namespace csr.core.parse;
 
-
-
 public class CSharpPatternParser {
     private readonly Parser<Pattern<string, CSharpAst>> _parser;
     public CSharpPatternParser() {
@@ -102,6 +100,8 @@ public class CSharpPatternParser {
                 throw new Exception("Encountered unknown Result in CSharpPatternParser::TryParse");
         }
     }
+
+    public Result<Pattern<string, CSharpAst>> Parse(string input) => _parser.Parse(input);
 
     private static Parser<Unit> Letter(char c, bool clearSpace = true) => new Parser<Unit>((input, index) => { 
         if (index >= input.Length) {
