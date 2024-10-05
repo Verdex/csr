@@ -11,6 +11,12 @@ namespace csr.core.code;
 public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CSharpAst> {
     private CSharpAst() { }
 
+    public string SymbolName() => this switch {
+        Symbol s => s.Value,
+        SimpleType s => s.Value,
+        _ => "",
+    };
+
     public IEnumerable<CSharpAst> Next() => 
         this switch {
             ClassDef { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
