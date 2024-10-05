@@ -1,5 +1,6 @@
 ﻿
 using csr.core.code;
+using csr.core.parse;
 using csr.core.traverse;
 
 namespace csr;
@@ -16,6 +17,8 @@ public static class Program {
 
 
     public static void Main() {
+        var p = new CSharpPatternParser();
+
         var currentDirectory = Directory.GetCurrentDirectory();
 
         //CSharpAstExt.Blarg();
@@ -32,7 +35,9 @@ public static class Program {
         foreach(var ww in csFiles) {
 
             foreach( var x in ww.ToSeq()) {
-                Console.WriteLine(x);
+                if(p.TryParse(":class.and([| =blargy |])", out var pattern) && x.Find(pattern).Any()) {
+                    Console.WriteLine(x);
+                }
             }
             Console.WriteLine("=");
         }
