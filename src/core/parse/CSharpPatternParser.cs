@@ -24,6 +24,10 @@ public class CSharpPatternParser {
                           from s in Symbol(clearSpace: false)
                           select TemplateVar(s);
 
+        var symbolName = from _ in Letter('=')
+                         from s in Symbol()
+                         select Predicate(ast => ast.SymbolName() == s);
+
         var patternComma = from p in topLevel 
                            from _ in Letter(',') 
                            select p;
@@ -81,7 +85,7 @@ public class CSharpPatternParser {
 
         // Note:  exact should go before capture because a caputre looks like the beginning of an exact
 
-        _parser = followup.Or(exact, kind, contents, subContentPath, path, wild, capture, templateVar, pathNext);
+        _parser = followup.Or(exact, kind, contents, subContentPath, path, wild, capture, templateVar, symbolName, pathNext);
 
     }
 
