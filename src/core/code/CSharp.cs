@@ -21,6 +21,7 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
         this switch {
             ClassDef { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
             Constraint { Contents: var contents } => contents,
+            ConstructorDef { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
             IndexedType { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
             GenericTypeDef => [],
             MethodDef { Name: var name, Return: var returnType, Contents: var contents } => new CSharpAst[] {name, returnType}.Concat(contents),
@@ -41,6 +42,7 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
         id = this switch {
             ClassDef => "class",
             Constraint => "constraint",
+            ConstructorDef => "constructor",
             GenericTypeDef => "generic",
             IndexedType => "indexedType",
             MethodDef => "method",
@@ -58,12 +60,12 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
     //  nested top level, field, property, events, method
     public sealed record ClassDef(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
     public sealed record Constraint(ImmutableArray<CSharpAst> Contents) : CSharpAst;
+    public sealed record ConstructorDef(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
     public sealed record GenericTypeDef(string Value) : CSharpAst;
     public sealed record IndexedType(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
 
     // TODO for methods:
     //  internals, 
-    // TODO do constructors come for free?
     // TODO finalizers
     // TODO interface specified method definitions
     // TODO does short method declaration come for free?
@@ -147,6 +149,8 @@ public static class CSharpAstExt {
                 return [x.ToFullString().ToSymbol()];
             case MethodDeclarationSyntax x:
                 return [new CSharpAst.MethodDef(x.Identifier.Text.ToSymbol(), new CSharpAst.ReturnType(R(x.ReturnType)), R(x))];
+            case ConstructorDeclarationSyntax x: 
+                return [new CSharpAst.ConstructorDef(x.Identifier.Text.ToSymbol(), R(x))];
             case ClassDeclarationSyntax x: 
                 // Note: TypeParameter[List]Syntax gets generics
                 return [new CSharpAst.ClassDef(x.Identifier.Text.ToSymbol(), R(x))];
