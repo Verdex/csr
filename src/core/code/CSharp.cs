@@ -69,8 +69,6 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
 
     // TODO for methods:
     //  internals, 
-    // TODO interface specified method definitions
-    // TODO what about static void blarg(this T target)
 
     public sealed record MethodDef(Symbol Name, ReturnType Return, ImmutableArray<CSharpAst> Contents) : CSharpAst;
     public sealed record Namespace(ImmutableArray<CSharpAst> Contents) : CSharpAst;
@@ -84,7 +82,7 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
 
 
 
-    // TODO: class, record, (struct record?), struct, enum, interface, namespace, using, delegate
+    // TODO: record, (struct record?), struct, enum, interface, namespace, using, delegate
 
 }
 
