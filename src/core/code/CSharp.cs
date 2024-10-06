@@ -19,6 +19,7 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
 
     public IEnumerable<CSharpAst> Next() => 
         this switch {
+            Call { Contents: var contents } => contents,
             ClassDef { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
             Constraint { Contents: var contents } => contents,
             ConstructorDef { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
@@ -41,6 +42,7 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
     {
         contents = Next();
         id = this switch {
+            Call => "call",
             ClassDef => "class",
             Constraint => "constraint",
             ConstructorDef => "constructor",
@@ -60,6 +62,7 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
 
     // TODO for class: 
     //  nested top level, field, property, events, method
+    public sealed record Call(ImmutableArray<CSharpAst> Contents) : CSharpAst;
     public sealed record ClassDef(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
     public sealed record Constraint(ImmutableArray<CSharpAst> Contents) : CSharpAst;
     public sealed record ConstructorDef(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
@@ -120,6 +123,18 @@ public static class CSharpAstExt {
         static ImmutableArray<CSharpAst> R(SyntaxNode n) => n.ChildNodes().SelectMany(Process).ToImmutableArray();
         switch (node) {
             // TODO usings, static using, using as rename
+            case InvocationExpressionSyntax x:
+                return [new CSharpAst.Call(R(x))];
+            case ExpressionStatementSyntax x:
+                return R(x);
+            case EqualsValueClauseSyntax x:
+                return R(x);
+            case LocalDeclarationStatementSyntax x:
+                return R(x);
+            case VariableDeclarationSyntax x:
+                return R(x);
+            case StatementSyntax x: 
+                return R(x);
             case TypeParameterConstraintSyntax x : // Note:  Supposedly covers:  TypeConstraintSyntax, ConstructorConstraintSyntax, and ClassOrStructConstraintSyntax
                 return R(x);
             case TypeParameterConstraintClauseSyntax x:
@@ -134,7 +149,7 @@ public static class CSharpAstExt {
                 return R(x);
             case PredefinedTypeSyntax x:
                 return [new CSharpAst.SimpleType(x.GetText().ToString())];
-            case IdentifierNameSyntax x: // Note:  This appears to be types 
+            case IdentifierNameSyntax x: 
                 return [new CSharpAst.SimpleType(x.GetText().ToString())];
             case ParameterSyntax x:
                 return [new CSharpAst.Parameter(x.Identifier.Text.ToSymbol(), R(x))];
