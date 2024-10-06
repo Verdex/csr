@@ -22,8 +22,9 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
             ClassDef { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
             Constraint { Contents: var contents } => contents,
             ConstructorDef { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
-            IndexedType { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
+            FinalizerDef { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
             GenericTypeDef => [],
+            IndexedType { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
             MethodDef { Name: var name, Return: var returnType, Contents: var contents } => new CSharpAst[] {name, returnType}.Concat(contents),
             Namespace { Contents: var contents} => contents,
             Parameter { Name: var name, Contents: var contents } => new [] {name}.Concat(contents),
@@ -43,6 +44,7 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
             ClassDef => "class",
             Constraint => "constraint",
             ConstructorDef => "constructor",
+            FinalizerDef => "finalizer",
             GenericTypeDef => "generic",
             IndexedType => "indexedType",
             MethodDef => "method",
@@ -61,6 +63,7 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
     public sealed record ClassDef(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
     public sealed record Constraint(ImmutableArray<CSharpAst> Contents) : CSharpAst;
     public sealed record ConstructorDef(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
+    public sealed record FinalizerDef(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
     public sealed record GenericTypeDef(string Value) : CSharpAst;
     public sealed record IndexedType(Symbol Name, ImmutableArray<CSharpAst> Contents) : CSharpAst;
 
@@ -151,6 +154,8 @@ public static class CSharpAstExt {
                 return [new CSharpAst.MethodDef(x.Identifier.Text.ToSymbol(), new CSharpAst.ReturnType(R(x.ReturnType)), R(x))];
             case ConstructorDeclarationSyntax x: 
                 return [new CSharpAst.ConstructorDef(x.Identifier.Text.ToSymbol(), R(x))];
+            case DestructorDeclarationSyntax x:
+                return [new CSharpAst.FinalizerDef(x.Identifier.Text.ToSymbol(), R(x))];
             case ClassDeclarationSyntax x: 
                 // Note: TypeParameter[List]Syntax gets generics
                 return [new CSharpAst.ClassDef(x.Identifier.Text.ToSymbol(), R(x))];
