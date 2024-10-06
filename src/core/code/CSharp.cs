@@ -64,6 +64,8 @@ public abstract record CSharpAst : IMatchable<string, CSharpAst>, ISeqable<CShar
     // TODO for methods:
     //  internals, 
     // TODO do constructors come for free?
+    // TODO finalizers
+    // TODO interface specified method definitions
     // TODO does short method declaration come for free?
     // TODO what about static void blarg(this T target)
 
